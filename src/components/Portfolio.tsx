@@ -8,10 +8,17 @@ import { Card } from '@/components/ui/card'
 import { Github, Linkedin, Mail, FileText, ChevronDown, Moon, Sun, Menu, X } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Image from 'next/image'
+import { Project, CVData, PersonalInfo } from '@/types'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export default function Portfolio() {
+interface PortfolioProps {
+  projects: Project[]
+  cvData: CVData
+  personalInfo: PersonalInfo
+}
+
+export default function Portfolio({ projects = [], cvData = { experiences: [], education: [], skills: [] }, personalInfo = { name: 'John Doe', role: 'Software Engineer' } }: Readonly<PortfolioProps>) {
   const [activeSection, setActiveSection] = useState('')
   const sectionRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement> }>({})
   const [mounted, setMounted] = useState(false)
@@ -77,7 +84,11 @@ export default function Portfolio() {
   }
 
   if (!mounted) {
-    return null
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#C7D8D9] dark:bg-[#151E21]">
+        <div className="text-2xl text-[#2F3E44] dark:text-white">Loading...</div>
+      </div>
+    )
   }
 
   return (
@@ -88,7 +99,7 @@ export default function Portfolio() {
             <Button variant="ghost" className="mr-2 md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
               <Menu className="h-6 w-6" />
             </Button>
-            <h1 className="text-2xl font-bold tracking-wide">John Doe</h1>
+            <h1 className="text-2xl font-bold tracking-wide">{personalInfo.name}</h1>
           </div>
           <nav className="hidden md:block">
             <ul className="flex space-x-6">
@@ -158,8 +169,8 @@ export default function Portfolio() {
           ref={sectionRefs.current['home']}
           className="min-h-screen flex flex-col justify-center items-center text-center px-4 bg-gradient-to-b from-[#C7D8D9] to-[#91B8C1] dark:from-[#151E21] dark:to-[#121212]"
         >
-          <h1 className="text-6xl font-bold mb-6 animate-pulse text-[#2F3E44] dark:text-white">John Doe</h1>
-          <p className="text-2xl mb-8 text-[#2F3E44]/80 dark:text-white/80">Full Stack Developer & UI/UX Enthusiast</p>
+          <h1 className="text-6xl font-bold mb-6 animate-pulse text-[#2F3E44] dark:text-white">{personalInfo.name}</h1>
+          <p className="text-2xl mb-8 text-[#2F3E44]/80 dark:text-white/80">{personalInfo.role}</p>
           <div className="flex space-x-4">
             <Button size="lg" className="bg-[#56B281] hover:bg-[#56B281]/90 text-white" onClick={() => scrollToSection('portfolio')}>
               View Portfolio
@@ -181,23 +192,23 @@ export default function Portfolio() {
         >
           <h2 className="text-4xl font-bold mb-12 text-center text-[#2F3E44] dark:text-white">Portfolio</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[1, 2, 3, 4, 5, 6].map((item) => (
-              <Card key={item} className="bg-white dark:bg-[#121212] overflow-hidden group">
+            {projects.map((project, index) => (
+              <Card key={index} className="bg-white dark:bg-[#121212] overflow-hidden group">
                 <div className="aspect-video bg-[#91B8C1] dark:bg-[#151E21] relative overflow-hidden">
                   <Image
-                    src={`/placeholder.svg`}
-                    alt={`Project ${item}`}
+                    src={project.image}
+                    alt={project.title}
                     width={500}
                     height={250}
                     className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-[#2F3E44]/50 dark:bg-[#151E21]/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <Button className="bg-[#56B281] hover:bg-[#56B281]/90 text-white">View Project</Button>
+                    <Button className="bg-[#56B281] hover:bg-[#56B281]/90 text-white" onClick={() => window.open(project.link, '_blank')}>View Project</Button>
                   </div>
                 </div>
                 <div className="p-4">
-                  <h3 className="text-xl font-semibold mb-2 text-[#2F3E44] dark:text-white">Project {item}</h3>
-                  <p className="text-[#2F3E44]/70 dark:text-white/70">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                  <h3 className="text-xl font-semibold mb-2 text-[#2F3E44] dark:text-white">{project.title}</h3>
+                  <p className="text-[#2F3E44]/70 dark:text-white/70">{project.description}</p>
                 </div>
               </Card>
             ))}
@@ -213,37 +224,32 @@ export default function Portfolio() {
             <div className="bg-white dark:bg-[#151E21] rounded-lg p-6">
               <h3 className="text-2xl font-semibold mb-4 text-[#2F3E44] dark:text-white">Experience</h3>
               <ul className="space-y-4">
-                <li>
-                  <h4 className="text-xl font-medium text-[#2F3E44] dark:text-white">Senior Developer at Tech Co.</h4>
-                  <p className="text-[#2F3E44]/70 dark:text-white/70">2018 - Present</p>
-                  <p className="text-[#2F3E44] dark:text-white">Led development of multiple high-impact projects...</p>
-                </li>
-                <li>
-                  <h4 className="text-xl font-medium text-[#2F3E44] dark:text-white">Full Stack Developer at StartUp Inc.</h4>
-                  <p className="text-[#2F3E44]/70 dark:text-white/70">2015 - 2018</p>
-                  <p className="text-[#2F3E44] dark:text-white">Developed and maintained various web applications...</p>
-                </li>
+                {cvData.experiences.map((exp, index) => (
+                  <li key={index}>
+                    <h4 className="text-xl font-medium text-[#2F3E44] dark:text-white">{exp.title} at {exp.company}</h4>
+                    <p className="text-[#2F3E44]/70 dark:text-white/70">{exp.period}</p>
+                    <p className="text-[#2F3E44] dark:text-white">{exp.description}</p>
+                  </li>
+                ))}
               </ul>
             </div>
             <div className="bg-white dark:bg-[#151E21] rounded-lg p-6">
               <h3 className="text-2xl font-semibold mb-4 text-[#2F3E44] dark:text-white">Education</h3>
               <ul className="space-y-4">
-                <li>
-                  <h4 className="text-xl font-medium text-[#2F3E44] dark:text-white">MSc in Computer Science</h4>
-                  <p className="text-[#2F3E44]/70 dark:text-white/70">University of Technology, 2015</p>
-                </li>
-                <li>
-                  <h4 className="text-xl font-medium text-[#2F3E44] dark:text-white">BSc in Software Engineering</h4>
-                  <p className="text-[#2F3E44]/70 dark:text-white/70">State University, 2013</p>
-                </li>
+                {cvData.education.map((edu, index) => (
+                  <li key={index}>
+                    <h4 className="text-xl font-medium text-[#2F3E44] dark:text-white">{edu.degree}</h4>
+                    <p className="text-[#2F3E44]/70 dark:text-white/70">{edu.institution}, {edu.year}</p>
+                  </li>
+                ))}
               </ul>
             </div>
             <div className="bg-white dark:bg-[#151E21] rounded-lg p-6">
               <h3 className="text-2xl font-semibold mb-4 text-[#2F3E44] dark:text-white">Skills</h3>
               <div className="flex flex-wrap gap-2">
-                {['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'AWS', 'Docker', 'Git'].map((skill) => (
-                  <span key={skill} className="bg-[#56B281] text-white px-3 py-1 rounded-full text-sm">
-                    {skill}
+                {cvData.skills.map((skill, index) => (
+                  <span key={index} className="bg-[#56B281] text-white px-3 py-1 rounded-full text-sm">
+                    {skill.name}
                   </span>
                 ))}
               </div>
@@ -255,7 +261,7 @@ export default function Portfolio() {
           ref={sectionRefs.current['contact']}
           className="min-h-screen py-20 px-4 flex items-center justify-center bg-[#DED7C9] dark:bg-[#151E21]"
         >
-          <Card className="w-full max-w-md p-8 bg-white dark:bg-[#121212]">
+          <Card className="w-full max-w-md  p-8 bg-white dark:bg-[#121212]">
             <h2 className="text-4xl font-bold mb-8 text-center text-[#2F3E44] dark:text-white">Get in Touch</h2>
             <form className="space-y-6">
               <div>
@@ -266,6 +272,7 @@ export default function Portfolio() {
                   type="text"
                   id="name"
                   className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
+                
                 />
               </div>
               <div>
@@ -298,7 +305,7 @@ export default function Portfolio() {
 
       <footer className="bg-[#2F3E44] dark:bg-[#121212] py-8 px-4">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-          <p className="text-white">&copy; 2024 John Doe. All rights reserved.</p>
+          <p className="text-white">&copy; 2024 {personalInfo.name}. All rights reserved. This site was created by CharlyAutomatiza.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <a href="#" className="text-white/70 hover:text-white">
               <Github size={24} />
