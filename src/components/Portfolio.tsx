@@ -5,20 +5,14 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Github, Linkedin, Mail, FileText, ChevronDown, Moon, Sun, Menu, X } from 'lucide-react'
+import { GithubIcon, LinkedinIcon, MailIcon, FileTextIcon, ChevronDownIcon, MoonIcon, SunIcon, MenuIcon, XIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Image from 'next/image'
-import { Project, CVData, PersonalInfo } from '@/types'
+import { PortfolioProps } from '@/types'
 
 gsap.registerPlugin(ScrollTrigger)
 
-interface PortfolioProps {
-  projects: Project[]
-  cvData: CVData
-  personalInfo: PersonalInfo
-}
-
-export default function Portfolio({ projects = [], cvData = { experiences: [], education: [], skills: [] }, personalInfo = { name: 'John Doe', role: 'Software Engineer' } }: Readonly<PortfolioProps>) {
+export default function Portfolio({ projects, cvData, personalInfo, socialLinks, cvPdfUrl }: Readonly<PortfolioProps>) {
   const [activeSection, setActiveSection] = useState('')
   const sectionRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement> }>({})
   const [mounted, setMounted] = useState(false)
@@ -81,6 +75,7 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
     }
+    setMobileMenuOpen(false)
   }
 
   if (!mounted) {
@@ -96,18 +91,18 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
       <header className="header fixed top-0 left-0 right-0 z-50 bg-[#91B8C1]/80 dark:bg-[#121212]/80 backdrop-blur-md">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center">
-            <Button variant="ghost" className="mr-2 md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              <Menu className="h-6 w-6" />
+            <Button variant="ghost" className="mr-2 lg:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
+              <MenuIcon className="h-6 w-6" />
             </Button>
-            <h1 className="text-2xl font-bold tracking-wide">{personalInfo.name}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-wide">{personalInfo.name}</h1>
           </div>
-          <nav className="hidden md:block">
-            <ul className="flex space-x-6">
+          <nav className="hidden lg:block">
+            <ul className="flex space-x-2 sm:space-x-6">
               {['home', 'portfolio', 'cv', 'contact'].map((section) => (
                 <li key={section}>
                   <Button
                     variant="ghost"
-                    className={`text-lg ${
+                    className={`text-sm sm:text-lg px-2 sm:px-4 ${
                       activeSection === section 
                         ? 'bg-[#56B281] dark:bg-[#151E21] text-white' 
                         : 'text-[#2F3E44] dark:text-white hover:text-[#2F3E44]/80 dark:hover:text-white/80'
@@ -124,21 +119,22 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
             variant="ghost"
             size="icon"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="ml-auto"
+            className="ml-2"
+            aria-label="Toggle theme"
           >
-            {theme === 'dark' ? <Sun className="h-6 w-6" /> : <Moon className="h-6 w-6" />}
+            {theme === 'dark' ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
           </Button>
         </div>
       </header>
 
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm md:hidden">
+        <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm lg:hidden">
           <div
             ref={mobileMenuRef}
             className="fixed inset-y-0 left-0 w-64 bg-[#91B8C1] dark:bg-[#121212] p-6"
           >
-            <Button variant="ghost" className="absolute top-4 right-4" onClick={() => setMobileMenuOpen(false)}>
-              <X className="h-6 w-6" />
+            <Button variant="ghost" className="absolute top-4 right-4" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
+              <XIcon className="h-6 w-6" />
             </Button>
             <ul className="space-y-4 mt-8">
               {['home', 'portfolio', 'cv', 'contact'].map((section) => (
@@ -150,10 +146,7 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
                         ? 'bg-[#56B281] dark:bg-[#151E21] text-white' 
                         : 'text-[#2F3E44] dark:text-white hover:text-[#2F3E44]/80 dark:hover:text-white/80'
                     }`}
-                    onClick={() => {
-                      scrollToSection(section)
-                      setMobileMenuOpen(false)
-                    }}
+                    onClick={() => scrollToSection(section)}
                   >
                     {section.charAt(0).toUpperCase() + section.slice(1)}
                   </Button>
@@ -169,17 +162,24 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
           ref={sectionRefs.current['home']}
           className="min-h-screen flex flex-col justify-center items-center text-center px-4 bg-gradient-to-b from-[#C7D8D9] to-[#91B8C1] dark:from-[#151E21] dark:to-[#121212]"
         >
-          <h1 className="text-6xl font-bold mb-6 animate-pulse text-[#2F3E44] dark:text-white">{personalInfo.name}</h1>
-          <p className="text-2xl mb-8 text-[#2F3E44]/80 dark:text-white/80">{personalInfo.role}</p>
-          <div className="flex space-x-4">
+          <h1 className="text-4xl sm:text-6xl font-bold mb-6 animate-pulse text-[#2F3E44] dark:text-white">{personalInfo.name}</h1>
+          <p className="text-xl sm:text-2xl mb-8 text-[#2F3E44]/80 dark:text-white/80">{personalInfo.role}</p>
+          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
             <Button size="lg" className="bg-[#56B281] hover:bg-[#56B281]/90 text-white" onClick={() => scrollToSection('portfolio')}>
               View Portfolio
             </Button>
-            <Button size="lg" variant="outline" className="border-[#56B281] text-[#56B281] hover:bg-[#56B281]/10 dark:text-white dark:border-white">
-              Download CV
-            </Button>
+            {cvPdfUrl && (
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-[#56B281] text-[#56B281] hover:bg-[#56B281]/10 dark:text-white dark:border-white"
+                onClick={() => window.open(cvPdfUrl, '_blank')}
+              >
+                Download CV
+              </Button>
+            )}
           </div>
-          <ChevronDown
+          <ChevronDownIcon
             className="animate-bounce mt-16 cursor-pointer text-[#2F3E44] dark:text-white"
             size={48}
             onClick={() => scrollToSection('portfolio')}
@@ -190,7 +190,7 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
           ref={sectionRefs.current['portfolio']}
           className="min-h-screen py-20 px-4 bg-[#DED7C9] dark:bg-[#151E21]"
         >
-          <h2 className="text-4xl font-bold mb-12 text-center text-[#2F3E44] dark:text-white">Portfolio</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-[#2F3E44] dark:text-white">Portfolio</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project, index) => (
               <Card key={index} className="bg-white dark:bg-[#121212] overflow-hidden group">
@@ -219,7 +219,7 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
           ref={sectionRefs.current['cv']}
           className="min-h-screen py-20 px-4 bg-[#91B8C1] dark:bg-[#121212]"
         >
-          <h2 className="text-4xl font-bold mb-12 text-center text-white">Curriculum Vitae</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-white">Curriculum Vitae</h2>
           <div className="max-w-3xl mx-auto space-y-8">
             <div className="bg-white dark:bg-[#151E21] rounded-lg p-6">
               <h3 className="text-2xl font-semibold mb-4 text-[#2F3E44] dark:text-white">Experience</h3>
@@ -261,8 +261,8 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
           ref={sectionRefs.current['contact']}
           className="min-h-screen py-20 px-4 flex items-center justify-center bg-[#DED7C9] dark:bg-[#151E21]"
         >
-          <Card className="w-full max-w-md  p-8 bg-white dark:bg-[#121212]">
-            <h2 className="text-4xl font-bold mb-8 text-center text-[#2F3E44] dark:text-white">Get in Touch</h2>
+          <Card className="w-full max-w-md p-8 bg-white dark:bg-[#121212]">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-[#2F3E44] dark:text-white">Get in Touch</h2>
             <form className="space-y-6">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
@@ -272,7 +272,6 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
                   type="text"
                   id="name"
                   className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
-                
                 />
               </div>
               <div>
@@ -282,7 +281,7 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
                 <input
                   type="email"
                   id="email"
-                  className="w-full px-3 py-2  bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
+                  className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
                 />
               </div>
               <div>
@@ -305,20 +304,28 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
 
       <footer className="bg-[#2F3E44] dark:bg-[#121212] py-8 px-4">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-          <p className="text-white">&copy; 2024 {personalInfo.name}. All rights reserved. This site was created by CharlyAutomatiza.</p>
+          <p className="text-white text-center md:text-left">&copy; 2024 {personalInfo.name}. All rights reserved. This site was created by CharlyAutomatiza.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
-            <a href="#" className="text-white/70 hover:text-white">
-              <Github size={24} />
-            </a>
-            <a href="#" className="text-white/70 hover:text-white">
-              <Linkedin size={24} />
-            </a>
-            <a href="#" className="text-white/70 hover:text-white">
-              <Mail size={24} />
-            </a>
-            <a href="#" className="text-white/70 hover:text-white">
-              <FileText size={24} />
-            </a>
+            {socialLinks.github && (
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(socialLinks.github, '_blank')}>
+                <GithubIcon size={24} />
+              </Button>
+            )}
+            {socialLinks.linkedin && (
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(socialLinks.linkedin, '_blank')}>
+                <LinkedinIcon size={24} />
+              </Button>
+            )}
+            {socialLinks.email && (
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(`mailto:${socialLinks.email}`)}>
+                <MailIcon size={24} />
+              </Button>
+            )}
+            {cvPdfUrl && (
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(cvPdfUrl, '_blank')}>
+                <FileTextIcon size={24} />
+              </Button>
+            )}
           </div>
         </div>
       </footer>
