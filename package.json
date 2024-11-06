@@ -1,5 +1,5 @@
 {
-  "name": "charlyautomatiza-portfolio",
+  "name": "devfolio",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.0",
-    "charlyautomatiza-portfolio": "file:",
+    "@swc/helpers": "^0.5.13",
+    "@types/jspdf": "^2.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "gray-matter": "^4.0.3",
     "gsap": "^3.12.5",
+    "jspdf": "^2.5.2",
     "lucide-react": "^0.454.0",
     "next": "15.0.2",
     "next-themes": "^0.3.0",

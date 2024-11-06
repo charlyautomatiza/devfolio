@@ -5,20 +5,14 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Github, Linkedin, Mail, FileText, ChevronDown, Moon, Sun, Menu, X } from 'lucide-react'
+import { GithubIcon, LinkedinIcon, MailIcon, FileTextIcon, ChevronDownIcon, MoonIcon, SunIcon, MenuIcon, XIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Image from 'next/image'
-import { Project, CVData, PersonalInfo } from '@/types'
+import { PortfolioProps } from '@/types'
 
 gsap.registerPlugin(ScrollTrigger)
 
-interface PortfolioProps {
-  projects: Project[]
-  cvData: CVData
-  personalInfo: PersonalInfo
-}
-
-export default function Portfolio({ projects = [], cvData = { experiences: [], education: [], skills: [] }, personalInfo = { name: '', role: '' } }: Readonly<PortfolioProps>) {
+export default function Portfolio({ projects, cvData, personalInfo, socialLinks, cvPdfUrl }: Readonly<PortfolioProps>) {
   const [activeSection, setActiveSection] = useState('')
   const sectionRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement> }>({})
   const [mounted, setMounted] = useState(false)
@@ -98,7 +92,7 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center">
             <Button variant="ghost" className="mr-2 lg:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
-              <Menu className="h-6 w-6" />
+              <MenuIcon className="h-6 w-6" />
             </Button>
             <h1 className="text-xl sm:text-2xl font-bold tracking-wide">{personalInfo.name}</h1>
           </div>
@@ -128,7 +122,7 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
             className="ml-2"
             aria-label="Toggle theme"
           >
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {theme === 'dark' ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
           </Button>
         </div>
       </header>
@@ -140,7 +134,7 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
             className="fixed inset-y-0 left-0 w-64 bg-[#91B8C1] dark:bg-[#121212] p-6"
           >
             <Button variant="ghost" className="absolute top-4 right-4" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
-              <X className="h-6 w-6" />
+              <XIcon className="h-6 w-6" />
             </Button>
             <ul className="space-y-4 mt-8">
               {['home', 'portfolio', 'cv', 'contact'].map((section) => (
@@ -174,11 +168,18 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
             <Button size="lg" className="bg-[#56B281] hover:bg-[#56B281]/90 text-white" onClick={() => scrollToSection('portfolio')}>
               View Portfolio
             </Button>
-            <Button size="lg" variant="outline" className="border-[#56B281] text-[#56B281] hover:bg-[#56B281]/10 dark:text-white dark:border-white">
-              Download CV
-            </Button>
+            {cvPdfUrl && (
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-[#56B281] text-[#56B281] hover:bg-[#56B281]/10 dark:text-white dark:border-white"
+                onClick={() => window.open(cvPdfUrl, '_blank')}
+              >
+                Download CV
+              </Button>
+            )}
           </div>
-          <ChevronDown
+          <ChevronDownIcon
             className="animate-bounce mt-16 cursor-pointer text-[#2F3E44] dark:text-white"
             size={48}
             onClick={() => scrollToSection('portfolio')}
@@ -305,18 +306,26 @@ export default function Portfolio({ projects = [], cvData = { experiences: [], e
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
           <p className="text-white text-center md:text-left">&copy; 2024 {personalInfo.name}. All rights reserved. This site was created by CharlyAutomatiza.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
-            <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open('https://github.com', '_blank')}>
-              <Github size={24} />
-            </Button>
-            <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open('https://linkedin.com', '_blank')}>
-              <Linkedin size={24} />
-            </Button>
-            <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open('mailto:example@example.com')}>
-              <Mail size={24} />
-            </Button>
-            <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open('https://example.com', '_blank')}>
-              <FileText size={24} />
-            </Button>
+            {socialLinks.github && (
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(socialLinks.github, '_blank')}>
+                <GithubIcon size={24} />
+              </Button>
+            )}
+            {socialLinks.linkedin && (
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(socialLinks.linkedin, '_blank')}>
+                <LinkedinIcon size={24} />
+              </Button>
+            )}
+            {socialLinks.email && (
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(`mailto:${socialLinks.email}`)}>
+                <MailIcon size={24} />
+              </Button>
+            )}
+            {cvPdfUrl && (
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(cvPdfUrl, '_blank')}>
+                <FileTextIcon size={24} />
+              </Button>
+            )}
           </div>
         </div>
       </footer>
