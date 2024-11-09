@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { GithubIcon, LinkedinIcon, MailIcon, FileTextIcon, ChevronDownIcon, MoonIcon, SunIcon, MenuIcon, XIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import Image from 'next/image'
 import { PortfolioProps } from '@/types'
+import Image from 'next/image'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -19,19 +19,26 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const { theme, setTheme } = useTheme()
+  const [isContactEnabled, setIsContactEnabled] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null)
 
   useEffect(() => {
     setMounted(true)
-    
-    const sections = ['home', 'portfolio', 'cv', 'contact']
+    setIsContactEnabled(process.env.NEXT_PUBLIC_GOOGLE_SHEETS_ENABLED === 'true')
+
+    const sections = ['home', 'portfolio', 'cv']
+    if (isContactEnabled) sections.push('contact')
+
     sections.forEach((section) => {
-      sectionRefs.current[section] = React.createRef<HTMLDivElement>()
+      if (!sectionRefs.current[section]) {
+        sectionRefs.current[section] = React.createRef<HTMLDivElement>()
+      }
     })
 
     const handleScroll = () => {
       let current = ''
       sections.forEach((section) => {
-        const element = sectionRefs.current[section].current
+        const element = sectionRefs.current[section]?.current
         if (element) {
           const rect = element.getBoundingClientRect()
           if (rect.top <= 100 && rect.bottom >= 100) {
@@ -46,14 +53,14 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
     handleScroll() // Set initial active section
 
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [isContactEnabled])
 
   useEffect(() => {
     if (mounted) {
       gsap.from('.header', { y: -100, opacity: 0, duration: 1, ease: 'power3.out' })
 
       Object.keys(sectionRefs.current).forEach((section) => {
-        if (sectionRefs.current[section].current) {
+        if (sectionRefs.current[section]?.current) {
           gsap.from(sectionRefs.current[section].current, {
             opacity: 0,
             y: 50,
@@ -71,20 +78,53 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
   }, [mounted])
 
   const scrollToSection = (section: string) => {
-    const element = sectionRefs.current[section].current
+    const element = sectionRefs.current[section]?.current
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
+      setMobileMenuOpen(false)
+    } else {
+      console.warn(`Section ${section} is not available`)
     }
-    setMobileMenuOpen(false)
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const name = formData.get('name') as string
+    const email = formData.get('email') as string
+    const message = formData.get('message') as string
+
+    try {
+        const response = await fetch('/api/submit-form', {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name, email, message }),
+        })
+
+        if (!response.ok) {
+            const errorText = await response.text(); // Obtener el texto de error
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        if (e.currentTarget) {
+            e.currentTarget.reset()
+        }
+        setSubmitStatus('success')
+    } catch (error: unknown) { // Especificar el tipo de error como 'unknown'
+        console.error('Error submitting form:', error)
+        setSubmitStatus('error')
+    }
   }
 
   if (!mounted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#C7D8D9] dark:bg-[#151E21]">
-        <div className="text-2xl text-[#2F3E44] dark:text-white">Loading...</div>
-      </div>
-    )
+    return null
   }
+
+  const navItems = ['home', 'portfolio', 'cv']
+  if (isContactEnabled) navItems.push('contact')
 
   return (
     <div className="min-h-screen bg-[#C7D8D9] dark:bg-[#151E21] text-[#2F3E44] dark:text-white transition-colors duration-300">
@@ -98,7 +138,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
           </div>
           <nav className="hidden lg:block">
             <ul className="flex space-x-2 sm:space-x-6">
-              {['home', 'portfolio', 'cv', 'contact'].map((section) => (
+              {navItems.map((section) => (
                 <li key={section}>
                   <Button
                     variant="ghost"
@@ -137,7 +177,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
               <XIcon className="h-6 w-6" />
             </Button>
             <ul className="space-y-4 mt-8">
-              {['home', 'portfolio', 'cv', 'contact'].map((section) => (
+              {navItems.map((section) => (
                 <li key={section}>
                   <Button
                     variant="ghost"
@@ -158,6 +198,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
       )}
 
       <main className="pt-20">
+        {/* Home section */}
         <section
           ref={sectionRefs.current['home']}
           className="min-h-screen flex flex-col justify-center items-center text-center px-4 bg-gradient-to-b from-[#C7D8D9] to-[#91B8C1] dark:from-[#151E21] dark:to-[#121212]"
@@ -186,6 +227,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
           />
         </section>
 
+        {/* Portfolio section */}
         <section
           ref={sectionRefs.current['portfolio']}
           className="min-h-screen py-20 px-4 bg-[#DED7C9] dark:bg-[#151E21]"
@@ -215,6 +257,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
           </div>
         </section>
 
+        {/* CV section */}
         <section
           ref={sectionRefs.current['cv']}
           className="min-h-screen py-20 px-4 bg-[#91B8C1] dark:bg-[#121212]"
@@ -257,49 +300,60 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
           </div>
         </section>
 
-        <section
-          ref={sectionRefs.current['contact']}
-          className="min-h-screen py-20 px-4 flex items-center justify-center bg-[#DED7C9] dark:bg-[#151E21]"
-        >
-          <Card className="w-full max-w-md p-8 bg-white dark:bg-[#121212]">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-[#2F3E44] dark:text-white">Get in Touch</h2>
-            <form className="space-y-6">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
-                />
-              </div>
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  rows={4}
-                  className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
-                ></textarea>
-              </div>
-              <Button type="submit" className="w-full bg-[#56B281] hover:bg-[#56B281]/90 text-white">
-                Send Message
-              </Button>
-            </form>
-          </Card>
-        </section>
+        {/* Contact section */}
+        {isContactEnabled && (
+          <section
+            ref={sectionRefs.current['contact']}
+            className="min-h-screen py-20 px-4 flex items-center justify-center bg-[#DED7C9] dark:bg-[#151E21]"
+          >
+            <Card className="w-full max-w-md p-8 bg-white dark:bg-[#121212]">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-[#2F3E44] dark:text-white">Get in Touch</h2>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required
+                    className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={4}
+                    required
+                    className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
+                  ></textarea>
+                </div>
+                <Button type="submit" className="w-full bg-[#56B281] hover:bg-[#56B281]/90 text-white">
+                  Send Message
+                </Button>
+              </form>
+              {submitStatus === 'success' && <p className="mt-4 text-green-600">Message sent successfully!</p>}
+              {submitStatus === 'error' && <p className="mt-4 text-red-600">An error occurred. Please try again.</p>}
+            </Card>
+          </section>
+        )}
       </main>
 
       <footer className="bg-[#2F3E44] dark:bg-[#121212] py-8 px-4">
@@ -307,22 +361,22 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
           <p className="text-white text-center md:text-left">&copy; 2024 {personalInfo.name}. All rights reserved. This site was created by CharlyAutomatiza.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             {socialLinks.github && (
-              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(socialLinks.github, '_blank')}>
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(socialLinks.github, '_blank')} aria-label="GitHub">
                 <GithubIcon size={24} />
               </Button>
             )}
             {socialLinks.linkedin && (
-              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(socialLinks.linkedin, '_blank')}>
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(socialLinks.linkedin, '_blank')} aria-label="LinkedIn">
                 <LinkedinIcon size={24} />
               </Button>
             )}
             {socialLinks.email && (
-              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(`mailto:${socialLinks.email}`)}>
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(`mailto:${socialLinks.email}`)} aria-label="Email">
                 <MailIcon size={24} />
               </Button>
             )}
             {cvPdfUrl && (
-              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(cvPdfUrl, '_blank')}>
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(cvPdfUrl, '_blank')} aria-label="Download CV">
                 <FileTextIcon size={24} />
               </Button>
             )}

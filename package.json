@@ -9,11 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.2",
     "@radix-ui/react-slot": "^1.1.0",
     "@swc/helpers": "^0.5.13",
     "@types/jspdf": "^2.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "devfolio": "file:",
+    "googleapis": "^144.0.0",
     "gray-matter": "^4.0.3",
     "gsap": "^3.12.5",
     "jspdf": "^2.5.2",
