@@ -4,10 +4,11 @@ import React, { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { GithubIcon, LinkedinIcon, MailIcon, FileTextIcon, ChevronDownIcon, MoonIcon, SunIcon, MenuIcon, XIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { PortfolioProps } from '@/types'
+import Image from 'next/image'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -18,11 +19,14 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const { theme, setTheme } = useTheme()
+  const [isContactEnabled, setIsContactEnabled] = useState(false)
 
   useEffect(() => {
     setMounted(true)
+    setIsContactEnabled(process.env.NEXT_PUBLIC_GOOGLE_SHEETS_ENABLED === 'true')
     
-    const sections = ['home', 'portfolio', 'cv', 'contact']
+    const sections = ['home', 'portfolio', 'cv']
+    if (isContactEnabled) sections.push('contact')
     sections.forEach((section) => {
       sectionRefs.current[section] = React.createRef<HTMLDivElement>()
     })
@@ -77,9 +81,41 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
     setMobileMenuOpen(false)
   }
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const name = formData.get('name') as string
+    const email = formData.get('email') as string
+    const message = formData.get('message') as string
+
+    try {
+      const response = await fetch('/api/submit-form', {
+        method: 'POST',
+        mode: 'cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, message }),
+      })
+
+      if (response.ok) {
+        alert('Message sent successfully!')
+        e.currentTarget.reset()
+      } else {
+        alert('Failed to send message. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      alert('An error occurred. Please try again.')
+    }
+  }
+
   if (!mounted) {
     return null
   }
+
+  const navItems = ['home', 'portfolio', 'cv']
+  if (isContactEnabled) navItems.push('contact')
 
   return (
     <div className="min-h-screen bg-[#C7D8D9] dark:bg-[#151E21] text-[#2F3E44] dark:text-white transition-colors duration-300">
@@ -93,7 +129,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
           </div>
           <nav className="hidden lg:block">
             <ul className="flex space-x-2 sm:space-x-6">
-              {['home', 'portfolio', 'cv', 'contact'].map((section) => (
+              {navItems.map((section) => (
                 <li key={section}>
                   <Button
                     variant="ghost"
@@ -132,7 +168,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
               <XIcon className="h-6 w-6" />
             </Button>
             <ul className="space-y-4 mt-8">
-              {['home', 'portfolio', 'cv', 'contact'].map((section) => (
+              {navItems.map((section) => (
                 <li key={section}>
                   <Button
                     variant="ghost"
@@ -153,6 +189,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
       )}
 
       <main className="pt-20">
+        {/* Home section */}
         <section
           ref={sectionRefs.current['home']}
           className="min-h-screen flex flex-col justify-center items-center text-center px-4 bg-gradient-to-b from-[#C7D8D9] to-[#91B8C1] dark:from-[#151E21] dark:to-[#121212]"
@@ -181,26 +218,37 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
           />
         </section>
 
+        {/* Portfolio section */}
         <section
           ref={sectionRefs.current['portfolio']}
-          className="min-h-screen py-12 px-4 bg-secondary/20"
+          className="min-h-screen py-20 px-4 bg-[#DED7C9] dark:bg-[#151E21]"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center">Portfolio</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-[#2F3E44] dark:text-white">Portfolio</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project, index) => (
-              <Card key={index} className="overflow-hidden group">
-                <div className="aspect-video bg-[#91B8C1] dark:bg-[#151E21] flex items-center justify-center">
-                  <GithubIcon size={64} className="text-[#2F3E44] dark:text-white" />
+              <Card key={index} className="bg-white dark:bg-[#121212] overflow-hidden group">
+                <div className="aspect-video bg-[#91B8C1] dark:bg-[#151E21] relative overflow-hidden">
+                  <Image
+                    src={project.image}
+                    alt={project.title}
+                    width={500}
+                    height={250}
+                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-[#2F3E44]/50 dark:bg-[#151E21]/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <Button className="bg-[#56B281] hover:bg-[#56B281]/90 text-white" onClick={() => window.open(project.link, '_blank')}>View Project</Button>
+                  </div>
                 </div>
-                <CardContent className="p-4">
-                  <h3 className="text-xl font-semibold mb-2">{project.title}</h3>
-                  <p className="text-muted-foreground">{project.description}</p>
-                </CardContent>
+                <div className="p-4">
+                  <h3 className="text-xl font-semibold mb-2 text-[#2F3E44] dark:text-white">{project.title}</h3>
+                  <p className="text-[#2F3E44]/70 dark:text-white/70">{project.description}</p>
+                </div>
               </Card>
             ))}
           </div>
         </section>
 
+        {/* CV section */}
         <section
           ref={sectionRefs.current['cv']}
           className="min-h-screen py-20 px-4 bg-[#91B8C1] dark:bg-[#121212]"
@@ -243,49 +291,58 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
           </div>
         </section>
 
-        <section
-          ref={sectionRefs.current['contact']}
-          className="min-h-screen py-20 px-4 flex items-center justify-center bg-[#DED7C9] dark:bg-[#151E21]"
-        >
-          <Card className="w-full max-w-md p-8 bg-white dark:bg-[#121212]">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-[#2F3E44] dark:text-white">Get in Touch</h2>
-            <form className="space-y-6">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
-                />
-              </div>
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  rows={4}
-                  className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
-                ></textarea>
-              </div>
-              <Button type="submit" className="w-full bg-[#56B281] hover:bg-[#56B281]/90 text-white">
-                Send Message
-              </Button>
-            </form>
-          </Card>
-        </section>
+        {/* Contact section */}
+        {isContactEnabled && (
+          <section
+            ref={sectionRefs.current['contact']}
+            className="min-h-screen py-20 px-4 flex items-center justify-center bg-[#DED7C9] dark:bg-[#151E21]"
+          >
+            <Card className="w-full max-w-md p-8 bg-white dark:bg-[#121212]">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-[#2F3E44] dark:text-white">Get in Touch</h2>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required
+                    className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="message" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={4}
+                    required
+                    className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
+                  ></textarea>
+                </div>
+                <Button type="submit" className="w-full bg-[#56B281] hover:bg-[#56B281]/90 text-white">
+                  Send Message
+                </Button>
+              </form>
+            </Card>
+          </section>
+        )}
       </main>
 
       <footer className="bg-[#2F3E44] dark:bg-[#121212] py-8 px-4">
