@@ -20,6 +20,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const { theme, setTheme } = useTheme()
   const [isContactEnabled, setIsContactEnabled] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -94,24 +95,27 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
     const message = formData.get('message') as string
 
     try {
-      const response = await fetch('/api/submit-form', {
-        method: 'POST',
-        mode: 'cors',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, message }),
-      })
+        const response = await fetch('/api/submit-form', {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name, email, message }),
+        })
 
-      if (response.ok) {
-        alert('Message sent successfully!')
-        e.currentTarget.reset()
-      } else {
-        alert('Failed to send message. Please try again.')
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error)
-      alert('An error occurred. Please try again.')
+        if (!response.ok) {
+            const errorText = await response.text(); // Obtener el texto de error
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        }
+
+        if (e.currentTarget) {
+            e.currentTarget.reset()
+        }
+        setSubmitStatus('success')
+    } catch (error: unknown) { // Especificar el tipo de error como 'unknown'
+        console.error('Error submitting form:', error)
+        setSubmitStatus('error')
     }
   }
 
@@ -345,6 +349,8 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
                   Send Message
                 </Button>
               </form>
+              {submitStatus === 'success' && <p className="mt-4 text-green-600">Message sent successfully!</p>}
+              {submitStatus === 'error' && <p className="mt-4 text-red-600">An error occurred. Please try again.</p>}
             </Card>
           </section>
         )}
