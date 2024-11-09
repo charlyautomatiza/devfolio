@@ -24,17 +24,20 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
   useEffect(() => {
     setMounted(true)
     setIsContactEnabled(process.env.NEXT_PUBLIC_GOOGLE_SHEETS_ENABLED === 'true')
-    
+
     const sections = ['home', 'portfolio', 'cv']
     if (isContactEnabled) sections.push('contact')
+
     sections.forEach((section) => {
-      sectionRefs.current[section] = React.createRef<HTMLDivElement>()
+      if (!sectionRefs.current[section]) {
+        sectionRefs.current[section] = React.createRef<HTMLDivElement>()
+      }
     })
 
     const handleScroll = () => {
       let current = ''
       sections.forEach((section) => {
-        const element = sectionRefs.current[section].current
+        const element = sectionRefs.current[section]?.current
         if (element) {
           const rect = element.getBoundingClientRect()
           if (rect.top <= 100 && rect.bottom >= 100) {
@@ -49,14 +52,14 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
     handleScroll() // Set initial active section
 
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  }, [isContactEnabled])
 
   useEffect(() => {
     if (mounted) {
       gsap.from('.header', { y: -100, opacity: 0, duration: 1, ease: 'power3.out' })
 
       Object.keys(sectionRefs.current).forEach((section) => {
-        if (sectionRefs.current[section].current) {
+        if (sectionRefs.current[section]?.current) {
           gsap.from(sectionRefs.current[section].current, {
             opacity: 0,
             y: 50,
@@ -74,11 +77,13 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
   }, [mounted])
 
   const scrollToSection = (section: string) => {
-    const element = sectionRefs.current[section].current
+    const element = sectionRefs.current[section]?.current
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
+      setMobileMenuOpen(false)
+    } else {
+      console.warn(`Section ${section} is not available`)
     }
-    setMobileMenuOpen(false)
   }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
