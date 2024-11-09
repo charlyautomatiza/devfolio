@@ -4,10 +4,9 @@ import React, { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { GithubIcon, LinkedinIcon, MailIcon, FileTextIcon, ChevronDownIcon, MoonIcon, SunIcon, MenuIcon, XIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
-import Image from 'next/image'
 import { PortfolioProps } from '@/types'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -79,11 +78,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
   }
 
   if (!mounted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#C7D8D9] dark:bg-[#151E21]">
-        <div className="text-2xl text-[#2F3E44] dark:text-white">Loading...</div>
-      </div>
-    )
+    return null
   }
 
   return (
@@ -188,28 +183,19 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
 
         <section
           ref={sectionRefs.current['portfolio']}
-          className="min-h-screen py-20 px-4 bg-[#DED7C9] dark:bg-[#151E21]"
+          className="min-h-screen py-12 px-4 bg-secondary/20"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-[#2F3E44] dark:text-white">Portfolio</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center">Portfolio</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project, index) => (
-              <Card key={index} className="bg-white dark:bg-[#121212] overflow-hidden group">
-                <div className="aspect-video bg-[#91B8C1] dark:bg-[#151E21] relative overflow-hidden">
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    width={500}
-                    height={250}
-                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-[#2F3E44]/50 dark:bg-[#151E21]/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <Button className="bg-[#56B281] hover:bg-[#56B281]/90 text-white" onClick={() => window.open(project.link, '_blank')}>View Project</Button>
-                  </div>
+              <Card key={index} className="overflow-hidden group">
+                <div className="aspect-video bg-[#91B8C1] dark:bg-[#151E21] flex items-center justify-center">
+                  <GithubIcon size={64} className="text-[#2F3E44] dark:text-white" />
                 </div>
-                <div className="p-4">
-                  <h3 className="text-xl font-semibold mb-2 text-[#2F3E44] dark:text-white">{project.title}</h3>
-                  <p className="text-[#2F3E44]/70 dark:text-white/70">{project.description}</p>
-                </div>
+                <CardContent className="p-4">
+                  <h3 className="text-xl font-semibold mb-2">{project.title}</h3>
+                  <p className="text-muted-foreground">{project.description}</p>
+                </CardContent>
               </Card>
             ))}
           </div>
@@ -307,22 +293,22 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
           <p className="text-white text-center md:text-left">&copy; 2024 {personalInfo.name}. All rights reserved. This site was created by CharlyAutomatiza.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             {socialLinks.github && (
-              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(socialLinks.github, '_blank')}>
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(socialLinks.github, '_blank')} aria-label="GitHub">
                 <GithubIcon size={24} />
               </Button>
             )}
             {socialLinks.linkedin && (
-              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(socialLinks.linkedin, '_blank')}>
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(socialLinks.linkedin, '_blank')} aria-label="LinkedIn">
                 <LinkedinIcon size={24} />
               </Button>
             )}
             {socialLinks.email && (
-              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(`mailto:${socialLinks.email}`)}>
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(`mailto:${socialLinks.email}`)} aria-label="Email">
                 <MailIcon size={24} />
               </Button>
             )}
             {cvPdfUrl && (
-              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(cvPdfUrl, '_blank')}>
+              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(cvPdfUrl, '_blank')} aria-label="Download CV">
                 <FileTextIcon size={24} />
               </Button>
             )}
