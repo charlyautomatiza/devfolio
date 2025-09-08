@@ -7,8 +7,13 @@
   --foreground: #171717;
   --primary: #0066ff;
   --accent: #00ffaa;
-  --muted: #f5f5f5;
-  --border: #e5e5e5;
+  --accent-hover: #00cc88;
+  --muted: #f8fafc;
+  --border: #e2e8f0;
+  --card: #ffffff;
+  --card-hover: #f8fafc;
+  --gradient-start: #f1f5f9;
+  --gradient-end: #e2e8f0;
 }
 
 .dark {
@@ -16,8 +21,13 @@
   --foreground: #ededed;
   --primary: #0066ff;
   --accent: #00ffaa;
+  --accent-hover: #00cc88;
   --muted: #1a1a1a;
   --border: #333333;
+  --card: #1a1a1a;
+  --card-hover: #262626;
+  --gradient-start: #1a1a1a;
+  --gradient-end: #0a0a0a;
 }
 
 body {
@@ -25,4 +35,45 @@ body {
   background: var(--background);
   font-family: var(--font-geist), system-ui, -apple-system, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
+  line-height: 1.6;
+}
+
+/* Enhanced hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dark .card-hover:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 255, 170, 0.1), 0 10px 10px -5px rgba(0, 255, 170, 0.05);
+}
+
+/* Button glow effect */
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.btn-glow:hover::before {
+  left: 100%;
 }
