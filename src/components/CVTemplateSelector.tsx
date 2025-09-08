@@ -50,20 +50,20 @@ export default function CVTemplateSelector({ onTemplateSelect, onClose }: CVTemp
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-      <Card className="w-full max-w-4xl bg-card border border-border">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-foreground">Choose CV Template</h2>
-              <p className="text-foreground/70">Select a template that best represents your professional style</p>
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+      <Card className="w-full max-w-4xl max-h-[90vh] bg-card border border-border overflow-y-auto">
+        <div className="p-4 sm:p-6">
+          <div className="flex justify-between items-start mb-4 sm:mb-6">
+            <div className="flex-1 pr-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">Choose CV Template</h2>
+              <p className="text-sm sm:text-base text-foreground/70">Select a template that best represents your professional style</p>
             </div>
-            <Button variant="ghost" onClick={onClose} className="text-foreground/70 hover:text-foreground">
+            <Button variant="ghost" onClick={onClose} className="text-foreground/70 hover:text-foreground shrink-0">
               ✕
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
             {templates.map((template) => (
               <Card 
                 key={template.id}
@@ -74,8 +74,8 @@ export default function CVTemplateSelector({ onTemplateSelect, onClose }: CVTemp
                 }`}
                 onClick={() => setSelectedTemplate(template.id)}
               >
-                <div className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
+                <div className="p-4 sm:p-6">
+                  <div className="flex items-center gap-3 mb-3 sm:mb-4">
                     <div className={`p-2 rounded-lg ${
                       selectedTemplate === template.id 
                         ? 'bg-accent text-background' 
@@ -83,15 +83,15 @@ export default function CVTemplateSelector({ onTemplateSelect, onClose }: CVTemp
                     }`}>
                       {template.icon}
                     </div>
-                    <h3 className="text-lg font-semibold text-foreground">{template.name}</h3>
+                    <h3 className="text-base sm:text-lg font-semibold text-foreground">{template.name}</h3>
                   </div>
                   
-                  <p className="text-sm text-foreground/70 mb-4">{template.description}</p>
+                  <p className="text-xs sm:text-sm text-foreground/70 mb-3 sm:mb-4">{template.description}</p>
                   
-                  <div className="text-xs text-accent font-medium">{template.preview}</div>
+                  <div className="text-xs text-accent font-medium mb-3 sm:mb-4">{template.preview}</div>
                   
                   {/* Template preview mockup */}
-                  <div className="mt-4 h-32 bg-muted rounded border-2 border-dashed border-border flex items-center justify-center">
+                  <div className="h-24 sm:h-32 bg-muted rounded border-2 border-dashed border-border flex items-center justify-center">
                     <div className="text-center text-foreground/50">
                       <div className="text-xs mb-1">{template.name}</div>
                       <div className="text-xs">Preview</div>
@@ -102,17 +102,17 @@ export default function CVTemplateSelector({ onTemplateSelect, onClose }: CVTemp
             ))}
           </div>
 
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-foreground/70">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="text-xs sm:text-sm text-foreground/70">
               All templates include your complete experience, education, and skills
             </div>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={onClose}>
+            <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+              <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none">
                 Cancel
               </Button>
               <Button 
                 onClick={handleGenerate} 
-                className="bg-accent hover:bg-accent-hover text-background"
+                className="bg-accent hover:bg-accent-hover text-background flex-1 sm:flex-none text-xs sm:text-sm"
               >
                 Generate {templates.find(t => t.id === selectedTemplate)?.name} CV
               </Button>

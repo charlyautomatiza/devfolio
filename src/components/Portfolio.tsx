@@ -189,10 +189,14 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
       </header>
 
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm lg:hidden">
+        <div 
+          className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        >
           <div
             ref={mobileMenuRef}
-            className="fixed inset-y-0 left-0 w-64 bg-card border-r border-border p-6"
+            className="fixed inset-y-0 left-0 w-64 bg-card border-r border-border p-6 mobile-menu-enter"
+            onClick={(e) => e.stopPropagation()}
           >
             <Button variant="ghost" className="absolute top-4 right-4" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
               <XIcon className="h-6 w-6" />
