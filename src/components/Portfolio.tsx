@@ -5,12 +5,16 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { GithubIcon, LinkedinIcon, MailIcon, FileTextIcon, ChevronDownIcon, MoonIcon, SunIcon, MenuIcon, XIcon } from 'lucide-react'
+import { GithubIcon, LinkedinIcon, MailIcon, FileTextIcon, ChevronDownIcon, MoonIcon, SunIcon, MenuIcon, XIcon, PaletteIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import { useMultiTheme } from '@/components/MultiThemeProvider'
+import ThemeSelector from '@/components/ThemeSelector'
 import { PortfolioProps } from '@/types'
 import Image from 'next/image'
 import CVTemplateSelector from '@/components/CVTemplateSelector'
-import { createCVPdf, CVTemplate } from '@/utils/pdfGenerator'
+import CVDataForm, { CVFormData } from '@/components/CVDataForm'
+import CVPreview from '@/components/CVPreview'
+import { CVTemplate } from '@/utils/pdfGenerator'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -20,10 +24,16 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
   const [mounted, setMounted] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
-  const { theme, setTheme } = useTheme()
+  const { theme } = useTheme()
+  const { toggleMode } = useMultiTheme()
+  const [showThemeSelector, setShowThemeSelector] = useState(false)
   const [isContactEnabled, setIsContactEnabled] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null)
   const [showCVTemplateSelector, setShowCVTemplateSelector] = useState(false)
+  const [showCVDataForm, setShowCVDataForm] = useState(false)
+  const [showCVPreview, setShowCVPreview] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<CVTemplate>('harvard')
+  const [cvFormData, setCvFormData] = useState<CVFormData>({})
 
   useEffect(() => {
     setMounted(true)
@@ -122,22 +132,33 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
     }
   }
 
-  const handleCVDownload = (template: CVTemplate) => {
-    createCVPdf(cvData, personalInfo, { template, accentColor: '#00ffaa' })
-      .then((pdfBuffer) => {
-        const blob = new Blob([pdfBuffer], { type: 'application/pdf' })
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement('a')
-        link.href = url
-        link.download = `${personalInfo.name.replace(/\s+/g, '_')}_CV_${template}.pdf`
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-        URL.revokeObjectURL(url)
-      })
-      .catch((error) => {
-        console.error('Error generating CV:', error)
-      })
+  const handleTemplateSelect = (template: CVTemplate) => {
+    setSelectedTemplate(template)
+    setShowCVTemplateSelector(false)
+    setShowCVDataForm(true)
+  }
+
+  const handleCVDataSubmit = (data: CVFormData) => {
+    setCvFormData(data)
+    setShowCVDataForm(false)
+    setShowCVPreview(true)
+  }
+
+  const handlePreviewBack = () => {
+    setShowCVPreview(false)
+    setShowCVTemplateSelector(true)
+  }
+
+  const handlePreviewClose = () => {
+    setShowCVPreview(false)
+    setShowCVTemplateSelector(false)
+    setShowCVDataForm(false)
+    setCvFormData({})
+  }
+
+  const handleCVDownload = () => {
+    // This will be called from the preview component
+    handlePreviewClose()
   }
 
   if (!mounted) {
@@ -176,15 +197,26 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
               ))}
             </ul>
           </nav>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="ml-2 hover:bg-accent/10 hover:text-accent transition-all duration-300"
-            aria-label="Toggle theme"
-          >
-            {theme === 'dark' ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowThemeSelector(true)}
+              className="hover:bg-accent/10 hover:text-accent transition-all duration-300"
+              aria-label="Change theme"
+            >
+              <PaletteIcon className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleMode}
+              className="hover:bg-accent/10 hover:text-accent transition-all duration-300"
+              aria-label="Toggle theme mode"
+            >
+              {theme === 'dark' ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -406,7 +438,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
             {socialLinks.github && (
               <Button 
                 variant="ghost" 
-                className="text-foreground/70 hover:text-accent transition-colors duration-300" 
+                className="text-foreground/70 hover:text-accent transition-colors duration-300 dark:text-foreground/70 text-foreground/90" 
                 onClick={() => window.open(socialLinks.github, '_blank')} 
                 aria-label="GitHub"
               >
@@ -447,11 +479,40 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
         </div>
       </footer>
 
+      {/* Theme Selector Modal */}
+      {showThemeSelector && (
+        <ThemeSelector onClose={() => setShowThemeSelector(false)} />
+      )}
+
       {/* CV Template Selector Modal */}
       {showCVTemplateSelector && (
         <CVTemplateSelector
-          onTemplateSelect={handleCVDownload}
+          onTemplateSelect={handleTemplateSelect}
           onClose={() => setShowCVTemplateSelector(false)}
+        />
+      )}
+
+      {/* CV Data Form Modal */}
+      {showCVDataForm && (
+        <CVDataForm
+          onSubmit={handleCVDataSubmit}
+          onClose={() => {
+            setShowCVDataForm(false)
+            setShowCVTemplateSelector(true)
+          }}
+        />
+      )}
+
+      {/* CV Preview Modal */}
+      {showCVPreview && (
+        <CVPreview
+          template={selectedTemplate}
+          cvData={cvData}
+          personalInfo={personalInfo}
+          additionalData={cvFormData}
+          onClose={handlePreviewClose}
+          onBack={handlePreviewBack}
+          onDownload={handleCVDownload}
         />
       )}
     </div>

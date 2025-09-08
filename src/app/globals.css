@@ -3,17 +3,17 @@
 @import 'tailwindcss/utilities';
 
 :root {
-  --background: #ffffff;
-  --foreground: #0a0a0a;
+  --background: #fafafa;
+  --foreground: #1a1a1a;
   --primary: #0066ff;
-  --accent: #00ffaa;
-  --accent-hover: #00cc88;
-  --muted: #f8fafc;
-  --border: #e2e8f0;
+  --accent: #0ea5e9;
+  --accent-hover: #0284c7;
+  --muted: #f1f5f9;
+  --border: #d1d5db;
   --card: #ffffff;
   --card-hover: #f8fafc;
-  --gradient-start: #f1f5f9;
-  --gradient-end: #e2e8f0;
+  --gradient-start: #f8fafc;
+  --gradient-end: #f1f5f9;
 }
 
 .dark {

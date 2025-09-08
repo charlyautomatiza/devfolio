@@ -32,6 +32,10 @@ export interface CVData {
 export interface PersonalInfo {
   name: string;
   role: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  linkedin?: string;
 }
 
 export interface SocialLinks {

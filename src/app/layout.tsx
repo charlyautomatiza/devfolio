@@ -1,6 +1,7 @@
 import './globals.css'
 import localFont from 'next/font/local'
 import { ThemeProvider } from 'next-themes'
+import { MultiThemeProvider } from '@/components/MultiThemeProvider'
 
 const geist = localFont({
   src: [
@@ -23,7 +24,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geist.variable} font-sans`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          {children}
+          <MultiThemeProvider>
+            {children}
+          </MultiThemeProvider>
         </ThemeProvider>
       </body>
     </html>
