@@ -6,13 +6,11 @@ import { Card } from '@/components/ui/card'
 import { XIcon, DownloadIcon, ArrowLeftIcon } from 'lucide-react'
 import { CVTemplate, createCVPdf } from '@/utils/pdfGenerator'
 import { CVData, PersonalInfo } from '@/types'
-import { CVFormData } from '@/components/CVDataForm'
 
 interface CVPreviewProps {
   template: CVTemplate
   cvData: CVData
   personalInfo: PersonalInfo
-  additionalData: CVFormData
   onClose: () => void
   onBack: () => void
   onDownload: () => void
@@ -22,7 +20,6 @@ export default function CVPreview({
   template, 
   cvData, 
   personalInfo, 
-  additionalData, 
   onClose, 
   onBack, 
   onDownload 
@@ -33,18 +30,12 @@ export default function CVPreview({
   useEffect(() => {
     generatePreview()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [template, cvData, personalInfo, additionalData])
+  }, [template, cvData, personalInfo])
 
   const generatePreview = async () => {
     setIsGenerating(true)
     try {
-      // Create enhanced personal info with additional data
-      const enhancedPersonalInfo = {
-        ...personalInfo,
-        ...additionalData
-      }
-
-      const pdfArrayBuffer = await createCVPdf(cvData, enhancedPersonalInfo, { template })
+      const pdfArrayBuffer = await createCVPdf(cvData, personalInfo, { template })
       const blob = new Blob([pdfArrayBuffer], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       setPreviewUrl(url)
@@ -57,13 +48,7 @@ export default function CVPreview({
 
   const handleDownload = async () => {
     try {
-      // Create enhanced personal info with additional data
-      const enhancedPersonalInfo = {
-        ...personalInfo,
-        ...additionalData
-      }
-
-      const pdfArrayBuffer = await createCVPdf(cvData, enhancedPersonalInfo, { template })
+      const pdfArrayBuffer = await createCVPdf(cvData, personalInfo, { template })
       const blob = new Blob([pdfArrayBuffer], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       
@@ -136,15 +121,7 @@ export default function CVPreview({
         <div className="p-4 sm:p-6 border-t border-border">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="text-xs sm:text-sm text-foreground/70">
-              {Object.keys(additionalData).length > 0 && (
-                <div>
-                  <strong>Additional info included:</strong>{' '}
-                  {Object.entries(additionalData)
-                    .filter(([, value]) => value)
-                    .map(([key]) => key)
-                    .join(', ')}
-                </div>
-              )}
+              Using contact information from your profile
             </div>
             <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
               <Button variant="outline" onClick={onBack} className="flex-1 sm:flex-none">

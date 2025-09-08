@@ -31,11 +31,11 @@ function generateHarvardCV(cvData: CVData, personalInfo: PersonalInfo) {
   const doc = new jsPDF()
 
   // Header with enhanced styling
-  doc.setFontSize(20)
+  doc.setFontSize(18) // Reduced from 20
   doc.setFont('helvetica', 'bold')
   doc.text(personalInfo.name, 105, 25, { align: 'center' })
   
-  doc.setFontSize(12)
+  doc.setFontSize(10) // Reduced from 12
   doc.setFont('helvetica', 'normal')
   doc.text(personalInfo.role, 105, 35, { align: 'center' })
   
@@ -48,7 +48,7 @@ function generateHarvardCV(cvData: CVData, personalInfo: PersonalInfo) {
   if (personalInfo.linkedin) contactInfo.push(personalInfo.linkedin)
   
   if (contactInfo.length > 0) {
-    doc.setFontSize(8)
+    doc.setFontSize(7) // Reduced from 8
     doc.text(contactInfo.join(' • '), 105, contactY, { align: 'center' })
   }
   
@@ -67,20 +67,20 @@ function generateHarvardCV(cvData: CVData, personalInfo: PersonalInfo) {
     }
     
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(10)
+    doc.setFontSize(9) // Reduced from 10
     doc.text(`${exp.title} at ${exp.company}`, 20, yPos)
     yPos += 5
     
     doc.setFont('helvetica', 'italic')
-    doc.setFontSize(8)
+    doc.setFontSize(7) // Reduced from 8
     doc.text(`${exp.period} | ${exp.location || ''}`, 20, yPos)
     yPos += 5
     
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(8)
+    doc.setFontSize(7) // Reduced from 8
     const descriptionLines = doc.splitTextToSize(exp.description, 170) as string[]
     doc.text(descriptionLines, 20, yPos)
-    yPos += 3 * descriptionLines.length + 6
+    yPos += 2.8 * descriptionLines.length + 5 // Slightly reduced spacing
   })
 
   // Education Section
@@ -96,14 +96,14 @@ function generateHarvardCV(cvData: CVData, personalInfo: PersonalInfo) {
     }
     
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(12)
+    doc.setFontSize(10) // Reduced from 12
     doc.text(edu.degree, 20, yPos)
     yPos += 6
     
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(10)
+    doc.setFontSize(8) // Reduced from 10
     doc.text(`${edu.institution}, ${edu.year}`, 20, yPos)
-    yPos += 12
+    yPos += 10 // Slightly reduced spacing
   })
 
   // Skills Section
@@ -113,7 +113,7 @@ function generateHarvardCV(cvData: CVData, personalInfo: PersonalInfo) {
   }
   yPos = addSection(doc, 'SKILLS', yPos)
   
-  const skillsPerLine = 4
+  const skillsPerLine = 5 // Increased from 4
   for (let i = 0; i < cvData.skills.length; i += skillsPerLine) {
     if (yPos > 270) {
       doc.addPage()
@@ -121,9 +121,9 @@ function generateHarvardCV(cvData: CVData, personalInfo: PersonalInfo) {
     }
     const rowSkills = cvData.skills.slice(i, i + skillsPerLine)
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(10)
+    doc.setFontSize(8) // Reduced from 10
     doc.text(rowSkills.map(skill => skill.name).join(' • '), 20, yPos)
-    yPos += 6
+    yPos += 5 // Reduced spacing
   }
 
   return doc.output('arraybuffer')
@@ -137,27 +137,27 @@ function generateModernCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBuff
   // Use more professional colors - navy blue instead of bright accent
   const professionalAccent = '#1e40af' // Professional navy blue
   
-  // Modern header with accent color sidebar
+  // Modern header with accent color sidebar - ATS friendly approach
   doc.setFillColor(professionalAccent)
   doc.rect(0, 0, 60, 297, 'F') // Left sidebar
   
   // Name and role in white on accent background
   doc.setTextColor(255, 255, 255)
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(14)
+  doc.setFontSize(12) // Reduced for better ATS parsing
   const nameLines = doc.splitTextToSize(personalInfo.name, 50) as string[]
   let nameY = 25
   nameLines.forEach((line: string) => {
     doc.text(line, 30, nameY, { align: 'center' })
-    nameY += 6
+    nameY += 5 // Reduced spacing
   })
   
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(8)
+  doc.setFontSize(7) // Reduced from 8
   const roleLines = doc.splitTextToSize(personalInfo.role, 50) as string[]
   roleLines.forEach((line: string) => {
     doc.text(line, 30, nameY, { align: 'center' })
-    nameY += 5
+    nameY += 4 // Reduced spacing
   })
 
   // Add contact info in sidebar
@@ -200,23 +200,20 @@ function generateModernCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBuff
     }
   }
 
-  // Add Skills in the left sidebar
-  nameY += 15
+  // Add Skills in the left sidebar with improved ATS-friendly design
+  nameY += 12
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(10)
+  doc.setFontSize(8) // Reduced from 9
   doc.text('SKILLS', 30, nameY, { align: 'center' })
-  nameY += 8
+  nameY += 6
   
+  // Use simple text list instead of chips for better ATS compatibility
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(7)
+  doc.setFontSize(6) // Reduced for better fit
   cvData.skills.forEach((skill) => {
     if (nameY > 270) return // Prevent overflow
-    const skillLines = doc.splitTextToSize(skill.name, 45) as string[]
-    skillLines.forEach((line: string) => {
-      doc.text(line, 30, nameY, { align: 'center' })
-      nameY += 4
-    })
-    nameY += 2
+    doc.text(`• ${skill.name}`, 8, nameY) // Left-aligned bullets
+    nameY += 4
   })
 
   // Reset text color for main content
@@ -236,19 +233,19 @@ function generateModernCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBuff
     }
     
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(9)
+    doc.setFontSize(8) // Reduced from 9
     doc.text(`${exp.title}`, 70, yPos)
     yPos += 4
     
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(8)
+    doc.setFontSize(7) // Reduced from 8
     doc.text(`${exp.company} | ${exp.period}`, 70, yPos)
     yPos += 4
     
-    doc.setFontSize(7)
+    doc.setFontSize(6) // Reduced from 7
     const descriptionLines = doc.splitTextToSize(exp.description, 120) as string[]
     doc.text(descriptionLines, 70, yPos)
-    yPos += 2.5 * descriptionLines.length + 6
+    yPos += 2.2 * descriptionLines.length + 5 // Slightly reduced spacing
   })
 
   // Education section
@@ -263,14 +260,14 @@ function generateModernCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBuff
   yPos = addModernSection(doc, 'EDUCATION', yPos, professionalAccent)
   cvData.education.forEach((edu) => {
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(9)
+    doc.setFontSize(8) // Reduced from 9
     doc.text(edu.degree, 70, yPos)
     yPos += 4
     
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(7)
+    doc.setFontSize(6) // Reduced from 7
     doc.text(`${edu.institution}, ${edu.year}`, 70, yPos)
-    yPos += 8
+    yPos += 7 // Reduced spacing
   })
 
   return doc.output('arraybuffer')
@@ -283,21 +280,24 @@ function generateCreativeCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBu
   // Use more professional creative colors
   const professionalCreative = '#4f46e5' // Professional indigo
   
-  // Creative header with geometric shapes
-  doc.setFillColor(professionalCreative)
-  doc.circle(30, 30, 15, 'F')
-  
-  // Name in a modern layout
+  // Creative header without complex graphics for ATS compatibility
+  doc.setTextColor(professionalCreative)
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(16)
-  doc.text(personalInfo.name, 55, 25)
+  doc.setFontSize(14) // Reduced from 16
+  doc.text(personalInfo.name, 105, 25, { align: 'center' })
   
   doc.setFont('helvetica', 'normal')
-  doc.setFontSize(10)
-  doc.text(personalInfo.role, 55, 35)
+  doc.setFontSize(9) // Reduced from 10
+  doc.text(personalInfo.role, 105, 33, { align: 'center' })
+  
+  // Simple line separator instead of filled rectangle for ATS compatibility
+  doc.setDrawColor(professionalCreative)
+  doc.setLineWidth(1)
+  doc.line(20, 40, 190, 40)
   
   // Add contact info
-  let contactY = 42
+  doc.setTextColor(0, 0, 0)
+  let contactY = 48
   const contactInfo = []
   if (personalInfo.email) contactInfo.push(personalInfo.email)
   if (personalInfo.phone) contactInfo.push(personalInfo.phone)
@@ -305,92 +305,90 @@ function generateCreativeCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBu
   if (personalInfo.linkedin) contactInfo.push(personalInfo.linkedin)
   
   if (contactInfo.length > 0) {
-    doc.setFontSize(7)
-    const contactLines = doc.splitTextToSize(contactInfo.join(' • '), 130) as string[]
+    doc.setFontSize(6) // Reduced from 7
+    const contactLines = doc.splitTextToSize(contactInfo.join(' • '), 150) as string[]
     contactLines.forEach((line: string) => {
-      doc.text(line, 55, contactY)
+      doc.text(line, 105, contactY, { align: 'center' })
       contactY += 3
     })
   }
   
-  // Decorative line
-  doc.setLineWidth(2)
-  doc.setDrawColor(professionalCreative)
-  doc.line(20, 45, 190, 45)
-
-  let yPos = 65
+  let yPos = contactY + 10
 
   // Creative sections with colored headers
   yPos = addCreativeSection(doc, 'EXPERIENCE', yPos, professionalCreative)
   cvData.experiences.forEach((exp) => {
-    if (yPos > 260) {
+    if (yPos > 250) {
       doc.addPage()
       yPos = 20
     }
     
-    // Add a small accent dot
-    doc.setFillColor(professionalCreative)
-    doc.circle(25, yPos - 2, 2, 'F')
+    // Use simple bullet point instead of filled circle for ATS compatibility
+    doc.setTextColor(professionalCreative)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(6)
+    doc.text('•', 20, yPos)
     
     doc.setTextColor(0, 0, 0)
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(9)
-    doc.text(`${exp.title}`, 35, yPos)
+    doc.setFontSize(8) // Reduced from 9
+    doc.text(`${exp.title}`, 25, yPos)
     yPos += 4
     
     doc.setFont('helvetica', 'italic')
-    doc.setFontSize(7)
-    doc.text(`${exp.company} • ${exp.period}`, 35, yPos)
+    doc.setFontSize(6) // Reduced from 7
+    doc.text(`${exp.company} • ${exp.period}`, 25, yPos)
     yPos += 4
     
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(7)
-    const descriptionLines = doc.splitTextToSize(exp.description, 150) as string[]
-    doc.text(descriptionLines, 35, yPos)
-    yPos += 2.5 * descriptionLines.length + 8
+    doc.setFontSize(6) // Reduced from 7
+    const descriptionLines = doc.splitTextToSize(exp.description, 165) as string[]
+    doc.text(descriptionLines, 25, yPos)
+    yPos += 2.2 * descriptionLines.length + 6 // Reduced spacing
   })
 
   // Education with creative styling
-  if (yPos > 220) {
+  if (yPos > 200) {
     doc.addPage()
     yPos = 20
   }
   yPos = addCreativeSection(doc, 'EDUCATION', yPos, professionalCreative)
   cvData.education.forEach((edu) => {
-    doc.setFillColor(professionalCreative)
-    doc.circle(25, yPos - 2, 2, 'F')
+    // Use simple bullet point instead of filled circle for ATS compatibility
+    doc.setTextColor(professionalCreative)
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(6)
+    doc.text('•', 20, yPos)
     
     doc.setTextColor(0, 0, 0)
     doc.setFont('helvetica', 'bold')
-    doc.setFontSize(9)
-    doc.text(edu.degree, 35, yPos)
+    doc.setFontSize(8) // Reduced from 9
+    doc.text(edu.degree, 25, yPos)
     yPos += 4
     
     doc.setFont('helvetica', 'normal')
-    doc.setFontSize(7)
-    doc.text(`${edu.institution}, ${edu.year}`, 35, yPos)
-    yPos += 8
+    doc.setFontSize(6) // Reduced from 7
+    doc.text(`${edu.institution}, ${edu.year}`, 25, yPos)
+    yPos += 7 // Reduced spacing
   })
 
-  // Skills in a more compact creative grid
+  // Skills in a more compact creative format - ATS friendly
   yPos = addCreativeSection(doc, 'SKILLS', yPos, professionalCreative)
-  const skillsPerRow = 4
-  let xPos = 35
+  const skillsPerRow = 5 // Increased from 4
+  let xPos = 20
   cvData.skills.forEach((skill, index) => {
     if (index % skillsPerRow === 0 && index > 0) {
-      yPos += 6
-      xPos = 35
+      yPos += 5 // Reduced from 6
+      xPos = 20
     }
     
-    doc.setFillColor(professionalCreative)
-    doc.roundedRect(xPos - 2, yPos - 3, 40, 5, 1, 1, 'F')
-    doc.setTextColor(255, 255, 255)
+    // Use simple text instead of filled rectangles for better ATS compatibility
+    doc.setTextColor(0, 0, 0)
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(6)
-    doc.text(skill.name, xPos + 18, yPos, { align: 'center' })
+    doc.text(`• ${skill.name}`, xPos, yPos)
     
-    xPos += 42
-    doc.setTextColor(0, 0, 0)
+    xPos += 35 // Adjust spacing
   })
 
   return doc.output('arraybuffer')
@@ -399,29 +397,34 @@ function generateCreativeCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBu
 // Helper functions
 function addSection(doc: jsPDF, title: string, yPos: number): number {
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(12)
-  doc.text(title, 20, yPos)
-  doc.setLineWidth(0.5)
+  doc.setFontSize(10) // Reduced for better ATS compatibility
+  doc.text(title.toUpperCase(), 20, yPos) // Uppercase for ATS recognition
+  doc.setLineWidth(0.3) // Thinner line for ATS compatibility
   doc.line(20, yPos + 2, 190, yPos + 2)
-  return yPos + 10
+  return yPos + 8
 }
 
 function addModernSection(doc: jsPDF, title: string, yPos: number, accentColor: string): number {
   doc.setTextColor(accentColor)
   doc.setFont('helvetica', 'bold')
-  doc.setFontSize(10)
-  doc.text(title, 70, yPos)
+  doc.setFontSize(9) // Reduced for better ATS compatibility
+  doc.text(title.toUpperCase(), 70, yPos) // Uppercase for ATS recognition
   doc.setTextColor(0, 0, 0)
-  return yPos + 8
+  return yPos + 7
 }
 
 function addCreativeSection(doc: jsPDF, title: string, yPos: number, accentColor: string): number {
-  doc.setFillColor(accentColor)
-  doc.rect(20, yPos - 5, 170, 8, 'F')
-  doc.setTextColor(255, 255, 255)
+  // Use text-based header instead of filled rectangle for better ATS compatibility
+  doc.setTextColor(accentColor)
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(10)
-  doc.text(title, 105, yPos, { align: 'center' })
+  doc.text(title.toUpperCase(), 20, yPos) // Left-aligned and uppercase for ATS
+  
+  // Add a simple line instead of filled rectangle
+  doc.setDrawColor(accentColor)
+  doc.setLineWidth(1)
+  doc.line(20, yPos + 2, 190, yPos + 2)
+  
   doc.setTextColor(0, 0, 0)
-  return yPos + 12
+  return yPos + 10
 }

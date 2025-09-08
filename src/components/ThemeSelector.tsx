@@ -14,8 +14,14 @@ export default function ThemeSelector({ onClose }: ThemeSelectorProps) {
   const { currentTheme, currentMode, setTheme, setMode } = useMultiTheme()
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
-      <Card className="w-full max-w-2xl bg-card border border-border">
+    <div 
+      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4"
+      onClick={onClose}
+    >
+      <Card 
+        className="w-full max-w-2xl bg-card border border-border"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="p-4 sm:p-6">
           <div className="flex justify-between items-start mb-4 sm:mb-6">
             <div className="flex-1 pr-4">

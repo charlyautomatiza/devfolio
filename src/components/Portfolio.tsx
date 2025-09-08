@@ -12,7 +12,6 @@ import ThemeSelector from '@/components/ThemeSelector'
 import { PortfolioProps } from '@/types'
 import Image from 'next/image'
 import CVTemplateSelector from '@/components/CVTemplateSelector'
-import CVDataForm, { CVFormData } from '@/components/CVDataForm'
 import CVPreview from '@/components/CVPreview'
 import { CVTemplate } from '@/utils/pdfGenerator'
 
@@ -30,10 +29,8 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
   const [isContactEnabled, setIsContactEnabled] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null)
   const [showCVTemplateSelector, setShowCVTemplateSelector] = useState(false)
-  const [showCVDataForm, setShowCVDataForm] = useState(false)
   const [showCVPreview, setShowCVPreview] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState<CVTemplate>('harvard')
-  const [cvFormData, setCvFormData] = useState<CVFormData>({})
 
   useEffect(() => {
     setMounted(true)
@@ -135,12 +132,6 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
   const handleTemplateSelect = (template: CVTemplate) => {
     setSelectedTemplate(template)
     setShowCVTemplateSelector(false)
-    setShowCVDataForm(true)
-  }
-
-  const handleCVDataSubmit = (data: CVFormData) => {
-    setCvFormData(data)
-    setShowCVDataForm(false)
     setShowCVPreview(true)
   }
 
@@ -152,8 +143,6 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
   const handlePreviewClose = () => {
     setShowCVPreview(false)
     setShowCVTemplateSelector(false)
-    setShowCVDataForm(false)
-    setCvFormData({})
   }
 
   const handleCVDownload = () => {
@@ -170,15 +159,22 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
 
   return (
     <div className="min-h-screen bg-gradient-modern text-foreground transition-all duration-300">
-      <header className="header fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md border-b border-border/10">
+      <header className="header fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md border-b border-border/10" role="banner">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center">
-            <Button variant="ghost" className="mr-2 lg:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
+            <Button 
+              variant="ghost" 
+              className="mr-2 lg:hidden" 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation"
+            >
               <MenuIcon className="h-6 w-6" />
             </Button>
             <h1 className="text-xl sm:text-2xl font-bold tracking-wide">{personalInfo.name}</h1>
           </div>
-          <nav className="hidden lg:block">
+          <nav className="hidden lg:block" role="navigation" aria-label="Main navigation">
             <ul className="flex space-x-2 sm:space-x-6">
               {navItems.map((section) => (
                 <li key={section}>
@@ -190,6 +186,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
                         : 'text-foreground hover:text-accent hover:bg-muted'
                     }`}
                     onClick={() => scrollToSection(section)}
+                    aria-current={activeSection === section ? 'page' : undefined}
                   >
                     {section.charAt(0).toUpperCase() + section.slice(1)}
                   </Button>
@@ -224,13 +221,22 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
         <div 
           className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
         >
-          <div
+          <nav
+            id="mobile-navigation"
             ref={mobileMenuRef}
             className="fixed inset-y-0 left-0 w-64 bg-card border-r border-border p-6 mobile-menu-enter"
             onClick={(e) => e.stopPropagation()}
+            role="navigation"
+            aria-label="Mobile navigation"
           >
-            <Button variant="ghost" className="absolute top-4 right-4" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
+            <Button 
+              variant="ghost" 
+              className="absolute top-4 right-4" 
+              onClick={() => setMobileMenuOpen(false)} 
+              aria-label="Close navigation menu"
+            >
               <XIcon className="h-6 w-6" />
             </Button>
             <ul className="space-y-4 mt-8">
@@ -244,13 +250,14 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
                         : 'text-foreground hover:text-accent hover:bg-muted'
                     }`}
                     onClick={() => scrollToSection(section)}
+                    aria-current={activeSection === section ? 'page' : undefined}
                   >
                     {section.charAt(0).toUpperCase() + section.slice(1)}
                   </Button>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
         </div>
       )}
 
@@ -492,24 +499,12 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
         />
       )}
 
-      {/* CV Data Form Modal */}
-      {showCVDataForm && (
-        <CVDataForm
-          onSubmit={handleCVDataSubmit}
-          onClose={() => {
-            setShowCVDataForm(false)
-            setShowCVTemplateSelector(true)
-          }}
-        />
-      )}
-
       {/* CV Preview Modal */}
       {showCVPreview && (
         <CVPreview
           template={selectedTemplate}
           cvData={cvData}
           personalInfo={personalInfo}
-          additionalData={cvFormData}
           onClose={handlePreviewClose}
           onBack={handlePreviewBack}
           onDownload={handleCVDownload}
