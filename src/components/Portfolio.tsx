@@ -9,6 +9,8 @@ import { GithubIcon, LinkedinIcon, MailIcon, FileTextIcon, ChevronDownIcon, Moon
 import { useTheme } from 'next-themes'
 import { PortfolioProps } from '@/types'
 import Image from 'next/image'
+import CVTemplateSelector from '@/components/CVTemplateSelector'
+import { createCVPdf, CVTemplate } from '@/utils/pdfGenerator'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -21,6 +23,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
   const { theme, setTheme } = useTheme()
   const [isContactEnabled, setIsContactEnabled] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null)
+  const [showCVTemplateSelector, setShowCVTemplateSelector] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -117,6 +120,24 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
         console.error('Error submitting form:', error)
         setSubmitStatus('error')
     }
+  }
+
+  const handleCVDownload = (template: CVTemplate) => {
+    createCVPdf(cvData, personalInfo, { template, accentColor: '#00ffaa' })
+      .then((pdfBuffer) => {
+        const blob = new Blob([pdfBuffer], { type: 'application/pdf' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `${personalInfo.name.replace(/\s+/g, '_')}_CV_${template}.pdf`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+      })
+      .catch((error) => {
+        console.error('Error generating CV:', error)
+      })
   }
 
   if (!mounted) {
@@ -218,16 +239,14 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
               >
                 View Portfolio
               </Button>
-              {cvPdfUrl && (
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="border-accent text-accent hover:bg-accent/10 transform hover:scale-105 transition-all duration-300"
-                  onClick={() => window.open(cvPdfUrl, '_blank')}
-                >
-                  Download CV
-                </Button>
-              )}
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-accent text-accent hover:bg-accent/10 transform hover:scale-105 transition-all duration-300"
+                onClick={() => setShowCVTemplateSelector(true)}
+              >
+                Download CV
+              </Button>
             </div>
           </div>
           <ChevronDownIcon
@@ -414,7 +433,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
               <Button 
                 variant="ghost" 
                 className="text-foreground/70 hover:text-accent transition-colors duration-300" 
-                onClick={() => window.open(cvPdfUrl, '_blank')} 
+                onClick={() => setShowCVTemplateSelector(true)} 
                 aria-label="Download CV"
               >
                 <FileTextIcon size={24} />
@@ -423,6 +442,14 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
           </div>
         </div>
       </footer>
+
+      {/* CV Template Selector Modal */}
+      {showCVTemplateSelector && (
+        <CVTemplateSelector
+          onTemplateSelect={handleCVDownload}
+          onClose={() => setShowCVTemplateSelector(false)}
+        />
+      )}
     </div>
   )
 }
