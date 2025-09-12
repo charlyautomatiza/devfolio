@@ -55,6 +55,6 @@ export interface PortfolioProps {
   isDevMode?: boolean;
   featureFlags?: {
     DEFAULT_CV_TEMPLATE: 'harvard' | 'modern' | 'creative';
-    SWITCH_THEME: boolean;
   };
+  showThemeSelector?: boolean;
 }

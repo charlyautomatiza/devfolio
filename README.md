@@ -52,7 +52,23 @@ Edit the [social-links.md](./src/content/social-links.md) file in the `content` 
 
 ## Feature Configuration
 
-DevFolio includes several feature flags that can be configured via the [feature-flags.md](./src/content/feature-flags.md) file.
+DevFolio includes feature flags and environment variables for flexible configuration.
+
+### Environment Variables
+
+Create a `.env.local` file for local development or configure these in your deployment platform:
+
+#### DEV_MODE
+Controls development vs production behavior.
+- **Options**: `true`, `false`
+- **Default**: `false`
+- **Usage**: `DEV_MODE=true npm run dev`
+
+#### SWITCH_THEME  
+Controls theme switching availability in production mode.
+- **Options**: `true`, `false`
+- **Default**: `false`
+- **Environment Variable**: Set `SWITCH_THEME=true` to enable theme switching in production
 
 ### Environment Modes
 
@@ -87,17 +103,13 @@ Sets the default CV template for production mode downloads.
 DEFAULT_CV_TEMPLATE: harvard
 ```
 
-#### SWITCH_THEME
-Controls theme switching availability in production mode.
-- **Options**: `true`, `false`
-- **Default**: `false`
+### Theme Configuration
 
-```markdown
-SWITCH_THEME: false
-```
+Theme switching is now controlled via environment variables:
 
-When `true`: Theme palette selector is available even in production mode
-When `false`: Production mode uses only the default theme (Magenta Pink)
+- **Production Mode (default)**: Uses Magenta Pink theme only
+- **With SWITCH_THEME=true**: Enables theme palette selector in production
+- **Development Mode**: Always shows theme selector regardless of SWITCH_THEME setting
 
 ### Available Themes
 
@@ -161,6 +173,11 @@ This guide explains how to set up Google Sheets to use it with the contact form 
 ### Example Environment Variable Configuration in `.env.local` (for local development)
 
 ```env
+# DevFolio Configuration
+DEV_MODE=false
+SWITCH_THEME=false
+
+# Google Sheets Integration (Optional)
 NEXT_PUBLIC_GOOGLE_SHEETS_ENABLED=true
 GOOGLE_CLIENT_EMAIL=your-service-account-email@your-project.iam.gserviceaccount.com
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBg...\n-----END PRIVATE KEY-----\n"

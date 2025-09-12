@@ -24,7 +24,8 @@ export default function Portfolio({
   socialLinks, 
   cvPdfUrl, 
   isDevMode = false, 
-  featureFlags = { DEFAULT_CV_TEMPLATE: 'harvard', SWITCH_THEME: false } 
+  featureFlags = { DEFAULT_CV_TEMPLATE: 'harvard' },
+  showThemeSelector = false
 }: Readonly<PortfolioProps>) {
   const [activeSection, setActiveSection] = useState('')
   const sectionRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement> }>({})
@@ -33,7 +34,7 @@ export default function Portfolio({
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
   const { toggleMode } = useMultiTheme()
-  const [showThemeSelector, setShowThemeSelector] = useState(false)
+  const [themeSelectorOpen, setThemeSelectorOpen] = useState(false)
   const [isContactEnabled, setIsContactEnabled] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null)
   const [showCVTemplateSelector, setShowCVTemplateSelector] = useState(false)
@@ -229,11 +230,11 @@ export default function Portfolio({
             </ul>
           </nav>
           <div className="flex items-center gap-2">
-            {(isDevMode || featureFlags.SWITCH_THEME) && (
+            {showThemeSelector && (
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setShowThemeSelector(true)}
+                onClick={() => setThemeSelectorOpen(true)}
                 className="hover:bg-accent/10 hover:text-accent transition-all duration-300"
                 aria-label="Change theme"
               >
@@ -476,7 +477,18 @@ export default function Portfolio({
 
       <footer className="bg-background/90 backdrop-blur-md border-t border-border py-8 px-4">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-          <p className="text-foreground/80 text-center md:text-left">&copy; 2024 {personalInfo.name}. All rights reserved. This site was created by CharlyAutomatiza.</p>
+          <p className="text-foreground/80 text-center md:text-left">
+            &copy; {new Date().getFullYear()} {personalInfo.name}. All rights reserved. This site was created by{' '}
+            <a 
+              href="https://charlyautomatiza.tech/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-accent hover:text-accent/80 transition-colors duration-200 underline"
+            >
+              CharlyAutomatiza
+            </a>
+            .
+          </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             {socialLinks.github && (
               <Button 
@@ -523,8 +535,8 @@ export default function Portfolio({
       </footer>
 
       {/* Theme Selector Modal */}
-      {showThemeSelector && (
-        <ThemeSelector onClose={() => setShowThemeSelector(false)} />
+      {themeSelectorOpen && (
+        <ThemeSelector onClose={() => setThemeSelectorOpen(false)} />
       )}
 
       {/* CV Template Selector Modal */}

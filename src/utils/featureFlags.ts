@@ -4,7 +4,6 @@ import matter from 'gray-matter'
 
 export interface FeatureFlags {
   DEFAULT_CV_TEMPLATE: 'harvard' | 'modern' | 'creative'
-  SWITCH_THEME: boolean
 }
 
 export function getFeatureFlags(): FeatureFlags {
@@ -14,14 +13,12 @@ export function getFeatureFlags(): FeatureFlags {
     const { data } = matter(fileContent)
     
     return {
-      DEFAULT_CV_TEMPLATE: data.DEFAULT_CV_TEMPLATE || 'harvard',
-      SWITCH_THEME: data.SWITCH_THEME || false
+      DEFAULT_CV_TEMPLATE: data.DEFAULT_CV_TEMPLATE || 'harvard'
     }
   } catch (error) {
     console.warn('Failed to read feature flags, using defaults:', error)
     return {
-      DEFAULT_CV_TEMPLATE: 'harvard',
-      SWITCH_THEME: false
+      DEFAULT_CV_TEMPLATE: 'harvard'
     }
   }
 }
@@ -31,8 +28,7 @@ export function isDevMode(): boolean {
 }
 
 export function shouldShowThemeSelector(): boolean {
-  const flags = getFeatureFlags()
-  return isDevMode() || flags.SWITCH_THEME
+  return isDevMode() || process.env.SWITCH_THEME === 'true'
 }
 
 export function getDefaultTheme(): string {

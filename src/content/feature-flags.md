@@ -6,11 +6,6 @@
 # Available options: harvard, modern, creative
 # When in production mode (DEV_MODE=false), only this template will be available for download
 DEFAULT_CV_TEMPLATE: harvard
-
-# Theme Switching Configuration
-# When true, allows theme switching even in production mode
-# When false, production mode uses only the default theme (Magenta Pink)
-SWITCH_THEME: false
 ---
 
 # DevFolio Feature Flags
@@ -23,9 +18,14 @@ This file contains configuration flags that control various features in DevFolio
   - Options: `harvard`, `modern`, `creative`
   - Default: `harvard`
 
-## Theme Configuration  
+## Environment Variables
+
+The following features are now controlled via environment variables:
+
+### Theme Configuration  
 
 - **SWITCH_THEME**: Controls theme switching availability in production mode
+  - Environment variable: `SWITCH_THEME=true` or `SWITCH_THEME=false`
   - When `true`: Theme selector is available in production
   - When `false`: Production uses default theme only (Magenta Pink)
   - Default: `false`

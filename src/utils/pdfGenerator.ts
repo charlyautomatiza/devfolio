@@ -121,49 +121,51 @@ function generateHarvardCV(cvData: CVData, personalInfo: PersonalInfo) {
   }
   yPos = addSection(doc, 'SKILLS', yPos)
   
-  // Improved horizontal space utilization - create skill chips layout
-  const skillsPerLine = 8 // Increased from 5 for better space usage
+  // Improved horizontal space utilization - dynamic chip layout
   const pageWidth = 190 // Page width minus margins
   const chipSpacing = 2
   
-  for (let i = 0; i < cvData.skills.length; i += skillsPerLine) {
-    if (yPos > 270) {
-      doc.addPage()
-      yPos = 20
-    }
-    const rowSkills = cvData.skills.slice(i, i + skillsPerLine)
+  // Calculate how many skills can fit dynamically
+  let currentLineY = yPos
+  let xPos = 20
+  
+  cvData.skills.forEach((skill, index) => {
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(7) // Smaller font for more skills
     
-    // Calculate optimal spacing for chips
-    let xPos = 20
-    rowSkills.forEach((skill) => {
-      doc.setFont('helvetica', 'normal')
-      doc.setFontSize(7) // Smaller font for more skills
+    // Add skill as a chip-like element
+    const skillText = skill.name
+    const textWidth = doc.getTextWidth(skillText)
+    const chipWidth = textWidth + 4 // Padding for chip
+    
+    // Check if skill fits on current line
+    if (xPos + chipWidth > pageWidth) {
+      // Move to next line
+      currentLineY += 6
+      xPos = 20
       
-      // Add skill as a chip-like element
-      const skillText = skill.name
-      const textWidth = doc.getTextWidth(skillText)
-      const chipWidth = textWidth + 4 // Padding for chip
+      // Only create new page if we're running out of space AND have many skills left
+      const skillsRemaining = cvData.skills.length - index
+      const estimatedLinesNeeded = Math.ceil(skillsRemaining / 8) * 6 // Rough estimate
       
-      // Check if skill fits on current line
-      if (xPos + chipWidth > pageWidth) {
-        // Move to next line
-        yPos += 6
-        xPos = 20
+      if (currentLineY + estimatedLinesNeeded > 270 && skillsRemaining > 5) {
+        doc.addPage()
+        currentLineY = 20
+        yPos = addSection(doc, 'SKILLS (CONTINUED)', currentLineY)
+        currentLineY = yPos
       }
-      
-      // Draw skill chip background (light gray)
-      doc.setFillColor(245, 245, 245)
-      doc.rect(xPos, yPos - 3, chipWidth, 5, 'F')
-      
-      // Draw skill text
-      doc.setTextColor(60, 60, 60)
-      doc.text(skillText, xPos + 2, yPos, { baseline: 'middle' })
-      
-      xPos += chipWidth + chipSpacing
-    })
+    }
     
-    yPos += 8 // Line spacing
-  }
+    // Draw skill chip background (light gray)
+    doc.setFillColor(245, 245, 245)
+    doc.rect(xPos, currentLineY - 3, chipWidth, 5, 'F')
+    
+    // Draw skill text
+    doc.setTextColor(60, 60, 60)
+    doc.text(skillText, xPos + 2, currentLineY, { baseline: 'middle' })
+    
+    xPos += chipWidth + chipSpacing
+  })
 
   // Reset text color to black
   doc.setTextColor(0, 0, 0)
@@ -441,9 +443,8 @@ function addSection(doc: jsPDF, title: string, yPos: number): number {
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(10) // Reduced for better ATS compatibility
   doc.text(title.toUpperCase(), 20, yPos) // Uppercase for ATS recognition
-  doc.setLineWidth(0.3) // Thinner line for ATS compatibility
-  doc.line(20, yPos + 2, 190, yPos + 2)
-  return yPos + 8
+  // Removed redundant line - header line provides sufficient separation
+  return yPos + 6 // Reduced spacing since no line
 }
 
 function addModernSection(doc: jsPDF, title: string, yPos: number, accentColor: string): number {
