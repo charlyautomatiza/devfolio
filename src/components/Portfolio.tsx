@@ -13,11 +13,19 @@ import { PortfolioProps } from '@/types'
 import Image from 'next/image'
 import CVTemplateSelector from '@/components/CVTemplateSelector'
 import CVPreview from '@/components/CVPreview'
-import { CVTemplate } from '@/utils/pdfGenerator'
+import { CVTemplate, createCVPdf } from '@/utils/pdfGenerator'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export default function Portfolio({ projects, cvData, personalInfo, socialLinks, cvPdfUrl }: Readonly<PortfolioProps>) {
+export default function Portfolio({ 
+  projects, 
+  cvData, 
+  personalInfo, 
+  socialLinks, 
+  cvPdfUrl, 
+  isDevMode = false, 
+  featureFlags = { DEFAULT_CV_TEMPLATE: 'harvard', SWITCH_THEME: false } 
+}: Readonly<PortfolioProps>) {
   const [activeSection, setActiveSection] = useState('')
   const sectionRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement> }>({})
   const [mounted, setMounted] = useState(false)
@@ -150,6 +158,32 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
     handlePreviewClose()
   }
 
+  const handleCVDownloadClick = async () => {
+    if (isDevMode) {
+      // Development mode: Show template selector and preview
+      setShowCVTemplateSelector(true)
+    } else {
+      // Production mode: Direct download with default template
+      try {
+        const template = featureFlags.DEFAULT_CV_TEMPLATE
+        const pdfArrayBuffer = await createCVPdf(cvData, personalInfo, socialLinks, { template })
+        const blob = new Blob([pdfArrayBuffer], { type: 'application/pdf' })
+        const url = URL.createObjectURL(blob)
+        
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `${personalInfo.name.replace(/\s+/g, '_')}_CV_${template}.pdf`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        URL.revokeObjectURL(url)
+      } catch (error) {
+        console.error('Error downloading CV:', error)
+      }
+    }
+  }
+
   if (!mounted) {
     return null
   }
@@ -195,15 +229,17 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
             </ul>
           </nav>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowThemeSelector(true)}
-              className="hover:bg-accent/10 hover:text-accent transition-all duration-300"
-              aria-label="Change theme"
-            >
-              <PaletteIcon className="h-5 w-5" />
-            </Button>
+            {(isDevMode || featureFlags.SWITCH_THEME) && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowThemeSelector(true)}
+                className="hover:bg-accent/10 hover:text-accent transition-all duration-300"
+                aria-label="Change theme"
+              >
+                <PaletteIcon className="h-5 w-5" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -286,7 +322,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
                 size="lg" 
                 variant="outline" 
                 className="border-accent text-accent hover:bg-accent/10 transform hover:scale-105 transition-all duration-300"
-                onClick={() => setShowCVTemplateSelector(true)}
+                onClick={handleCVDownloadClick}
               >
                 Download CV
               </Button>
@@ -476,7 +512,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
               <Button 
                 variant="ghost" 
                 className="text-foreground/70 hover:text-accent transition-colors duration-300" 
-                onClick={() => setShowCVTemplateSelector(true)} 
+                onClick={handleCVDownloadClick} 
                 aria-label="Download CV"
               >
                 <FileTextIcon size={24} />
@@ -505,6 +541,7 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
           template={selectedTemplate}
           cvData={cvData}
           personalInfo={personalInfo}
+          socialLinks={socialLinks}
           onClose={handlePreviewClose}
           onBack={handlePreviewBack}
           onDownload={handleCVDownload}

@@ -2,6 +2,7 @@ import { getMarkdownContent } from '@/utils/markdown'
 import Portfolio from '@/components/Portfolio'
 import { Metadata } from 'next'
 import { CVData, PersonalInfo, Project, SocialLinks } from '@/types'
+import { getFeatureFlags, isDevMode } from '@/utils/featureFlags'
 import Script from 'next/script'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -29,6 +30,8 @@ export default async function Page() {
   const personalInfo = personalInfoData.data as PersonalInfo
   const socialLinks = socialLinksData.data as SocialLinks
   const projects = projectsData.data.projects as Project[]
+  const flags = getFeatureFlags()
+  const devMode = isDevMode()
 
   // Structured data for SEO
   const structuredData = {
@@ -70,6 +73,8 @@ export default async function Page() {
         personalInfo={personalInfo}
         socialLinks={socialLinks}
         cvPdfUrl="/cv.pdf" // Keep for backward compatibility
+        isDevMode={devMode}
+        featureFlags={flags}
       />
     </>
   )

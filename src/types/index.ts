@@ -32,6 +32,7 @@ export interface CVData {
 export interface PersonalInfo {
   name: string;
   role: string;
+  location?: string;
   email?: string;
   phone?: string;
   website?: string;
@@ -51,4 +52,9 @@ export interface PortfolioProps {
   personalInfo: PersonalInfo;
   socialLinks: SocialLinks;
   cvPdfUrl?: string;
+  isDevMode?: boolean;
+  featureFlags?: {
+    DEFAULT_CV_TEMPLATE: 'harvard' | 'modern' | 'creative';
+    SWITCH_THEME: boolean;
+  };
 }

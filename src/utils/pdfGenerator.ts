@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf'
-import { CVData, PersonalInfo } from '@/types'
+import { CVData, PersonalInfo, SocialLinks } from '@/types'
 
 export type CVTemplate = 'harvard' | 'modern' | 'creative'
 
@@ -11,18 +11,25 @@ interface CVGeneratorOptions {
 export async function createCVPdf(
   cvData: CVData, 
   personalInfo: PersonalInfo, 
+  socialLinks?: SocialLinks,
   options: CVGeneratorOptions = {}
 ) {
   const { template = 'harvard' } = options
   
+  // Merge email from social links if not present in personal info
+  const enhancedPersonalInfo = {
+    ...personalInfo,
+    email: personalInfo.email || socialLinks?.email
+  }
+  
   switch (template) {
     case 'modern':
-      return generateModernCV(cvData, personalInfo)
+      return generateModernCV(cvData, enhancedPersonalInfo)
     case 'creative':
-      return generateCreativeCV(cvData, personalInfo)
+      return generateCreativeCV(cvData, enhancedPersonalInfo)
     case 'harvard':
     default:
-      return generateHarvardCV(cvData, personalInfo)
+      return generateHarvardCV(cvData, enhancedPersonalInfo)
   }
 }
 
@@ -44,6 +51,7 @@ function generateHarvardCV(cvData: CVData, personalInfo: PersonalInfo) {
   const contactInfo = []
   if (personalInfo.email) contactInfo.push(personalInfo.email)
   if (personalInfo.phone) contactInfo.push(personalInfo.phone)
+  if (personalInfo.location) contactInfo.push(personalInfo.location)
   if (personalInfo.website) contactInfo.push(personalInfo.website)
   if (personalInfo.linkedin) contactInfo.push(personalInfo.linkedin)
   
@@ -113,18 +121,52 @@ function generateHarvardCV(cvData: CVData, personalInfo: PersonalInfo) {
   }
   yPos = addSection(doc, 'SKILLS', yPos)
   
-  const skillsPerLine = 5 // Increased from 4
+  // Improved horizontal space utilization - create skill chips layout
+  const skillsPerLine = 8 // Increased from 5 for better space usage
+  const pageWidth = 190 // Page width minus margins
+  const chipSpacing = 2
+  
   for (let i = 0; i < cvData.skills.length; i += skillsPerLine) {
     if (yPos > 270) {
       doc.addPage()
       yPos = 20
     }
     const rowSkills = cvData.skills.slice(i, i + skillsPerLine)
-    doc.setFont('helvetica', 'normal')
-    doc.setFontSize(8) // Reduced from 10
-    doc.text(rowSkills.map(skill => skill.name).join(' • '), 20, yPos)
-    yPos += 5 // Reduced spacing
+    
+    // Calculate optimal spacing for chips
+    let xPos = 20
+    rowSkills.forEach((skill) => {
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(7) // Smaller font for more skills
+      
+      // Add skill as a chip-like element
+      const skillText = skill.name
+      const textWidth = doc.getTextWidth(skillText)
+      const chipWidth = textWidth + 4 // Padding for chip
+      
+      // Check if skill fits on current line
+      if (xPos + chipWidth > pageWidth) {
+        // Move to next line
+        yPos += 6
+        xPos = 20
+      }
+      
+      // Draw skill chip background (light gray)
+      doc.setFillColor(245, 245, 245)
+      doc.rect(xPos, yPos - 3, chipWidth, 5, 'F')
+      
+      // Draw skill text
+      doc.setTextColor(60, 60, 60)
+      doc.text(skillText, xPos + 2, yPos, { baseline: 'middle' })
+      
+      xPos += chipWidth + chipSpacing
+    })
+    
+    yPos += 8 // Line spacing
   }
+
+  // Reset text color to black
+  doc.setTextColor(0, 0, 0)
 
   return doc.output('arraybuffer')
 }

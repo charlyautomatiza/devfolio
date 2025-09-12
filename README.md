@@ -36,7 +36,7 @@ DevFolio is a modern, responsive, and customizable portfolio template for develo
 
 ### Personal Information
 
-Edit the [personal-info.md](./src/content/personal-info.md) file in the `content` directory to update your name, role, and other personal details.
+Edit the [personal-info.md](./src/content/personal-info.md) file in the `content` directory to update your name, role, location, and other personal details.
 
 ### Projects
 
@@ -49,6 +49,67 @@ Update your experience, education, and skills in the [cv.md](./src/content/cv.md
 ### Social Links
 
 Edit the [social-links.md](./src/content/social-links.md) file in the `content` directory to add or modify your social media links.
+
+## Feature Configuration
+
+DevFolio includes several feature flags that can be configured via the [feature-flags.md](./src/content/feature-flags.md) file.
+
+### Environment Modes
+
+DevFolio operates in two distinct modes:
+
+#### Development Mode (DEV_MODE=true)
+```bash
+DEV_MODE=true npm run dev
+```
+- Full CV template selection and preview functionality
+- All theme combinations accessible via palette selector
+- Enhanced debugging and testing features
+
+#### Production Mode (DEV_MODE=false - default)
+```bash
+npm run build && npm start
+```
+- Direct CV download using the configured default template
+- Single theme mode (Magenta Pink) unless SWITCH_THEME=true
+- Optimized for end-user experience
+
+### Feature Flags Configuration
+
+Edit the `src/content/feature-flags.md` file to configure:
+
+#### DEFAULT_CV_TEMPLATE
+Sets the default CV template for production mode downloads.
+- **Options**: `harvard`, `modern`, `creative`
+- **Default**: `harvard`
+
+```markdown
+DEFAULT_CV_TEMPLATE: harvard
+```
+
+#### SWITCH_THEME
+Controls theme switching availability in production mode.
+- **Options**: `true`, `false`
+- **Default**: `false`
+
+```markdown
+SWITCH_THEME: false
+```
+
+When `true`: Theme palette selector is available even in production mode
+When `false`: Production mode uses only the default theme (Magenta Pink)
+
+### Available Themes
+
+DevFolio includes 5 professional theme combinations:
+
+1. **Ocean Blue** - Professional blue tones
+2. **Royal Purple** - Elegant purple palette  
+3. **Forest Green** - Natural green colors
+4. **Sunset Orange** - Warm orange hues
+5. **Magenta Pink** - Vibrant pink accents (production default)
+
+Each theme includes both light and dark mode variants with carefully selected color palettes for optimal readability and professional appearance.
 
 ## Portfolio Configuration with Google Sheets for Contact Form (optional)
 

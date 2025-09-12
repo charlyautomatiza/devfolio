@@ -5,12 +5,13 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { XIcon, DownloadIcon, ArrowLeftIcon } from 'lucide-react'
 import { CVTemplate, createCVPdf } from '@/utils/pdfGenerator'
-import { CVData, PersonalInfo } from '@/types'
+import { CVData, PersonalInfo, SocialLinks } from '@/types'
 
 interface CVPreviewProps {
   template: CVTemplate
   cvData: CVData
   personalInfo: PersonalInfo
+  socialLinks?: SocialLinks
   onClose: () => void
   onBack: () => void
   onDownload: () => void
@@ -20,6 +21,7 @@ export default function CVPreview({
   template, 
   cvData, 
   personalInfo, 
+  socialLinks,
   onClose, 
   onBack, 
   onDownload 
@@ -35,7 +37,7 @@ export default function CVPreview({
   const generatePreview = async () => {
     setIsGenerating(true)
     try {
-      const pdfArrayBuffer = await createCVPdf(cvData, personalInfo, { template })
+      const pdfArrayBuffer = await createCVPdf(cvData, personalInfo, socialLinks, { template })
       const blob = new Blob([pdfArrayBuffer], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       setPreviewUrl(url)
@@ -48,7 +50,7 @@ export default function CVPreview({
 
   const handleDownload = async () => {
     try {
-      const pdfArrayBuffer = await createCVPdf(cvData, personalInfo, { template })
+      const pdfArrayBuffer = await createCVPdf(cvData, personalInfo, socialLinks, { template })
       const blob = new Blob([pdfArrayBuffer], { type: 'application/pdf' })
       const url = URL.createObjectURL(blob)
       
