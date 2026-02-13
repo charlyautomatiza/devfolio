@@ -70,6 +70,12 @@ Controls theme switching availability in production mode.
 - **Default**: `false`
 - **Environment Variable**: Set `SWITCH_THEME=true` to enable theme switching in production
 
+#### NEXT_PUBLIC_SITE_URL
+The base URL of your deployed site (used for SEO metadata and structured data).
+- **Example**: `https://devfolio.charlyautomatiza.com`
+- **Default**: `https://devfolio.charlyautomatiza.com`
+- **Usage**: Set this to your actual deployment URL for proper SEO
+
 ### Environment Modes
 
 DevFolio operates in two distinct modes:
@@ -176,6 +182,7 @@ This guide explains how to set up Google Sheets to use it with the contact form 
 # DevFolio Configuration
 DEV_MODE=false
 SWITCH_THEME=false
+NEXT_PUBLIC_SITE_URL=https://devfolio.charlyautomatiza.com
 
 # Google Sheets Integration (Optional)
 NEXT_PUBLIC_GOOGLE_SHEETS_ENABLED=true

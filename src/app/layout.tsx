@@ -17,7 +17,7 @@ const geist = localFont({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://devfolio.charlyautomatiza.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://devfolio.charlyautomatiza.com'),
   title: {
     default: 'DevFolio - Professional Developer Portfolio & CV Generator',
     template: '%s | DevFolio'
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://devfolio.charlyautomatiza.com',
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://devfolio.charlyautomatiza.com',
     title: 'DevFolio - Professional Developer Portfolio & CV Generator',
     description: 'Modern developer portfolio with professional CV generation, multiple themes, and ATS-friendly templates.',
     siteName: 'DevFolio',
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     images: ['/og-image.png'],
   },
   alternates: {
-    canonical: 'https://devfolio.charlyautomatiza.com',
+    canonical: process.env.NEXT_PUBLIC_SITE_URL || 'https://devfolio.charlyautomatiza.com',
   },
   other: {
     'theme-color': '#0f172a',

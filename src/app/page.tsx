@@ -40,7 +40,7 @@ export default async function Page() {
     "@type": "Person",
     "name": personalInfo.name,
     "jobTitle": personalInfo.role,
-    "url": "https://devfolio.charlyautomatiza.com",
+    "url": process.env.NEXT_PUBLIC_SITE_URL || "https://devfolio.charlyautomatiza.com",
     "sameAs": [
       socialLinks.linkedin,
       socialLinks.github,

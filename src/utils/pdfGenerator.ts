@@ -8,6 +8,11 @@ interface CVGeneratorOptions {
   accentColor?: string
 }
 
+// Helper function to ensure splitTextToSize returns an array
+function ensureArray(result: string | string[]): string[] {
+  return Array.isArray(result) ? result : [result]
+}
+
 export async function createCVPdf(
   cvData: CVData, 
   personalInfo: PersonalInfo, 
@@ -86,7 +91,8 @@ function generateHarvardCV(cvData: CVData, personalInfo: PersonalInfo) {
     
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(7) // Reduced from 8
-    const descriptionLines = doc.splitTextToSize(exp.description, 170) as string[]
+    const descriptionLinesRaw = doc.splitTextToSize(exp.description, 170)
+    const descriptionLines = ensureArray(descriptionLinesRaw)
     doc.text(descriptionLines, 20, yPos)
     yPos += 2.8 * descriptionLines.length + 5 // Slightly reduced spacing
   })
@@ -144,15 +150,18 @@ function generateHarvardCV(cvData: CVData, personalInfo: PersonalInfo) {
       currentLineY += 6
       xPos = 20
       
-      // Only create new page if we're running out of space AND have many skills left
+      // Create new page if we're running out of space to prevent overflow
       const skillsRemaining = cvData.skills.length - index
-      const estimatedLinesNeeded = Math.ceil(skillsRemaining / 8) * 6 // Rough estimate
+      const avgSkillsPerLine = 8 // Conservative estimate
+      const estimatedLinesNeeded = Math.ceil(skillsRemaining / avgSkillsPerLine) * 6
       
-      if (currentLineY + estimatedLinesNeeded > 270 && skillsRemaining > 5) {
+      // Add page if remaining skills would overflow (with buffer for safety)
+      if (currentLineY + estimatedLinesNeeded > 265) {
         doc.addPage()
         currentLineY = 20
         yPos = addSection(doc, 'SKILLS (CONTINUED)', currentLineY)
         currentLineY = yPos
+        xPos = 20
       }
     }
     
@@ -189,7 +198,8 @@ function generateModernCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBuff
   doc.setTextColor(255, 255, 255)
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(12) // Reduced for better ATS parsing
-  const nameLines = doc.splitTextToSize(personalInfo.name, 50) as string[]
+  const nameLinesRaw = doc.splitTextToSize(personalInfo.name, 50)
+  const nameLines = ensureArray(nameLinesRaw)
   let nameY = 25
   nameLines.forEach((line: string) => {
     doc.text(line, 30, nameY, { align: 'center' })
@@ -198,7 +208,8 @@ function generateModernCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBuff
   
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(7) // Reduced from 8
-  const roleLines = doc.splitTextToSize(personalInfo.role, 50) as string[]
+  const roleLinesRaw = doc.splitTextToSize(personalInfo.role, 50)
+  const roleLines = ensureArray(roleLinesRaw)
   roleLines.forEach((line: string) => {
     doc.text(line, 30, nameY, { align: 'center' })
     nameY += 4 // Reduced spacing
@@ -215,7 +226,8 @@ function generateModernCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBuff
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(6)
     if (personalInfo.email) {
-      const emailLines = doc.splitTextToSize(personalInfo.email, 45) as string[]
+      const emailLinesRaw = doc.splitTextToSize(personalInfo.email, 45)
+      const emailLines = ensureArray(emailLinesRaw)
       emailLines.forEach((line: string) => {
         doc.text(line, 30, nameY, { align: 'center' })
         nameY += 3
@@ -227,7 +239,8 @@ function generateModernCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBuff
       nameY += 5
     }
     if (personalInfo.website) {
-      const websiteLines = doc.splitTextToSize(personalInfo.website, 45) as string[]
+      const websiteLinesRaw = doc.splitTextToSize(personalInfo.website, 45)
+      const websiteLines = ensureArray(websiteLinesRaw)
       websiteLines.forEach((line: string) => {
         doc.text(line, 30, nameY, { align: 'center' })
         nameY += 3
@@ -235,7 +248,8 @@ function generateModernCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBuff
       nameY += 2
     }
     if (personalInfo.linkedin) {
-      const linkedinLines = doc.splitTextToSize(personalInfo.linkedin, 45) as string[]
+      const linkedinLinesRaw = doc.splitTextToSize(personalInfo.linkedin, 45)
+      const linkedinLines = ensureArray(linkedinLinesRaw)
       linkedinLines.forEach((line: string) => {
         doc.text(line, 30, nameY, { align: 'center' })
         nameY += 3
@@ -287,7 +301,8 @@ function generateModernCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBuff
     yPos += 4
     
     doc.setFontSize(6) // Reduced from 7
-    const descriptionLines = doc.splitTextToSize(exp.description, 120) as string[]
+    const descriptionLinesRaw = doc.splitTextToSize(exp.description, 120)
+    const descriptionLines = ensureArray(descriptionLinesRaw)
     doc.text(descriptionLines, 70, yPos)
     yPos += 2.2 * descriptionLines.length + 5 // Slightly reduced spacing
   })
@@ -350,7 +365,8 @@ function generateCreativeCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBu
   
   if (contactInfo.length > 0) {
     doc.setFontSize(6) // Reduced from 7
-    const contactLines = doc.splitTextToSize(contactInfo.join(' • '), 150) as string[]
+    const contactLinesRaw = doc.splitTextToSize(contactInfo.join(' • '), 150)
+    const contactLines = ensureArray(contactLinesRaw)
     contactLines.forEach((line: string) => {
       doc.text(line, 105, contactY, { align: 'center' })
       contactY += 3
@@ -386,7 +402,8 @@ function generateCreativeCV(cvData: CVData, personalInfo: PersonalInfo): ArrayBu
     
     doc.setFont('helvetica', 'normal')
     doc.setFontSize(6) // Reduced from 7
-    const descriptionLines = doc.splitTextToSize(exp.description, 165) as string[]
+    const descriptionLinesRaw = doc.splitTextToSize(exp.description, 165)
+    const descriptionLines = ensureArray(descriptionLinesRaw)
     doc.text(descriptionLines, 25, yPos)
     yPos += 2.2 * descriptionLines.length + 6 // Reduced spacing
   })

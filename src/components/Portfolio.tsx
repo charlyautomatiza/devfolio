@@ -493,7 +493,7 @@ export default function Portfolio({
             {socialLinks.github && (
               <Button 
                 variant="ghost" 
-                className="text-foreground/70 hover:text-accent transition-colors duration-300 dark:text-foreground/70 text-foreground/90" 
+                className="text-foreground/70 hover:text-accent transition-colors duration-300 dark:text-foreground/90" 
                 onClick={() => window.open(socialLinks.github, '_blank')} 
                 aria-label="GitHub"
               >

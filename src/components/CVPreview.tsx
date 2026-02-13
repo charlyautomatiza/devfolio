@@ -32,7 +32,7 @@ export default function CVPreview({
   useEffect(() => {
     generatePreview()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [template, cvData, personalInfo])
+  }, [template, cvData, personalInfo, socialLinks])
 
   const generatePreview = async () => {
     setIsGenerating(true)
