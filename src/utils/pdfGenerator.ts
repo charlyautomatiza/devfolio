@@ -13,6 +13,11 @@ function ensureArray(result: string | string[]): string[] {
   return Array.isArray(result) ? result : [result]
 }
 
+// PDF layout constants
+const PDF_PAGE_HEIGHT = 297 // A4 page height in mm
+const PAGE_BOTTOM_MARGIN = 32 // Safe margin from bottom to prevent content overflow (PDF_PAGE_HEIGHT - 265)
+const SKILLS_PAGE_THRESHOLD = PDF_PAGE_HEIGHT - PAGE_BOTTOM_MARGIN // 265mm - threshold for adding new page for skills
+
 export async function createCVPdf(
   cvData: CVData, 
   personalInfo: PersonalInfo, 
@@ -156,7 +161,7 @@ function generateHarvardCV(cvData: CVData, personalInfo: PersonalInfo) {
       const estimatedLinesNeeded = Math.ceil(skillsRemaining / avgSkillsPerLine) * 6
       
       // Add page if remaining skills would overflow (with buffer for safety)
-      if (currentLineY + estimatedLinesNeeded > 265) {
+      if (currentLineY + estimatedLinesNeeded > SKILLS_PAGE_THRESHOLD) {
         doc.addPage()
         currentLineY = 20
         yPos = addSection(doc, 'SKILLS (CONTINUED)', currentLineY)
