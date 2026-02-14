@@ -171,6 +171,8 @@ const defaultUIText: UIText = {
 }
 
 // Cache for UI text to avoid reading file multiple times
+// Safe for Next.js static generation as it's read once at build time
+// If you need request-specific or dynamic text, remove this cache
 let cachedUIText: UIText | null = null
 
 /**

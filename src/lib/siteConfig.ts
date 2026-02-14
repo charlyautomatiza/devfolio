@@ -79,6 +79,8 @@ const defaultSiteConfig: SiteConfig = {
 }
 
 // Cache for site config to avoid reading file multiple times
+// Safe for Next.js static generation as it's read once at build time
+// If you need request-specific data, remove this cache
 let cachedSiteConfig: SiteConfig | null = null
 
 /**
