@@ -25,7 +25,13 @@ export default function Portfolio({
   cvPdfUrl, 
   isDevMode = false, 
   featureFlags = { DEFAULT_CV_TEMPLATE: 'harvard' },
-  showThemeSelector = false
+  showThemeSelector = false,
+  footerConfig = {
+    show_creator_link: true,
+    creator_text: 'CharlyAutomatiza',
+    creator_url: 'https://charlyautomatiza.tech/',
+    rights_text: 'All rights reserved'
+  }
 }: Readonly<PortfolioProps>) {
   const [activeSection, setActiveSection] = useState('')
   const sectionRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement> }>({})
@@ -478,16 +484,21 @@ export default function Portfolio({
       <footer className="bg-background/90 backdrop-blur-md border-t border-border py-8 px-4">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
           <p className="text-foreground/80 text-center md:text-left">
-            &copy; {new Date().getFullYear()} {personalInfo.name}. All rights reserved. This site was created by{' '}
-            <a 
-              href="https://charlyautomatiza.tech/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-accent hover:text-accent/80 transition-colors duration-200 underline"
-            >
-              CharlyAutomatiza
-            </a>
-            .
+            &copy; {new Date().getFullYear()} {personalInfo.name}. {footerConfig.rights_text}.
+            {footerConfig.show_creator_link && (
+              <>
+                {' '}This site was created by{' '}
+                <a 
+                  href={footerConfig.creator_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-accent hover:text-accent/80 transition-colors duration-200 underline"
+                >
+                  {footerConfig.creator_text}
+                </a>
+                .
+              </>
+            )}
           </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             {socialLinks.github && (

@@ -46,6 +46,13 @@ export interface SocialLinks {
   cv?: string;
 }
 
+export interface FooterConfig {
+  show_creator_link: boolean;
+  creator_text: string;
+  creator_url: string;
+  rights_text: string;
+}
+
 export interface PortfolioProps {
   projects: Project[];
   cvData: CVData;
@@ -57,4 +64,5 @@ export interface PortfolioProps {
     DEFAULT_CV_TEMPLATE: 'harvard' | 'modern' | 'creative';
   };
   showThemeSelector?: boolean;
+  footerConfig?: FooterConfig;
 }

@@ -3,6 +3,7 @@ import Portfolio from '@/components/Portfolio'
 import { Metadata } from 'next'
 import { CVData, PersonalInfo, Project, SocialLinks } from '@/types'
 import { getFeatureFlags, isDevMode, shouldShowThemeSelector } from '@/utils/featureFlags'
+import { getSiteConfig } from '@/lib/siteConfig'
 import Script from 'next/script'
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -26,6 +27,7 @@ export default async function Page() {
   const cvData = await getMarkdownContent('cv.md')
   const personalInfoData = await getMarkdownContent('personal-info.md')
   const socialLinksData = await getMarkdownContent('social-links.md')
+  const siteConfig = getSiteConfig()
 
   const personalInfo = personalInfoData.data as PersonalInfo
   const socialLinks = socialLinksData.data as SocialLinks
@@ -40,7 +42,7 @@ export default async function Page() {
     "@type": "Person",
     "name": personalInfo.name,
     "jobTitle": personalInfo.role,
-    "url": process.env.NEXT_PUBLIC_SITE_URL || "https://devfolio.charlyautomatiza.com",
+    "url": siteConfig.site_url,
     "sameAs": [
       socialLinks.linkedin,
       socialLinks.github,
@@ -77,6 +79,7 @@ export default async function Page() {
         isDevMode={devMode}
         featureFlags={flags}
         showThemeSelector={showThemeSelector}
+        footerConfig={siteConfig.footer}
       />
     </>
   )

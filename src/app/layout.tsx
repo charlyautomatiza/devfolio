@@ -2,6 +2,7 @@ import './globals.css'
 import localFont from 'next/font/local'
 import { ThemeProvider } from 'next-themes'
 import { MultiThemeProvider } from '@/components/MultiThemeProvider'
+import { getSiteConfig } from '@/lib/siteConfig'
 import type { Metadata } from 'next'
 
 const geist = localFont({
@@ -16,64 +17,61 @@ const geist = localFont({
   display: 'swap',
 })
 
+// Generate metadata from site-config.md
+const siteConfig = getSiteConfig()
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://devfolio.charlyautomatiza.com'),
+  metadataBase: new URL(siteConfig.site_url),
   title: {
-    default: 'DevFolio - Professional Developer Portfolio & CV Generator',
-    template: '%s | DevFolio'
+    default: siteConfig.site_title,
+    template: `%s | ${siteConfig.site_name}`
   },
-  description: 'Modern developer portfolio with professional CV generation, multiple themes, and ATS-friendly templates. Showcase your projects and generate beautiful CVs instantly.',
-  keywords: [
-    'developer portfolio',
-    'CV generator', 
-    'resume builder',
-    'ATS friendly',
-    'professional templates',
-    'web developer',
-    'portfolio website',
-    'modern design'
-  ],
-  authors: [{ name: 'Charly Automatiza' }],
-  creator: 'Charly Automatiza',
-  publisher: 'Charly Automatiza',
+  description: siteConfig.site_description,
+  keywords: siteConfig.keywords,
+  authors: [{ name: siteConfig.author_name }],
+  creator: siteConfig.creator,
+  publisher: siteConfig.publisher,
   robots: {
-    index: true,
-    follow: true,
+    index: siteConfig.seo.index,
+    follow: siteConfig.seo.follow,
     googleBot: {
-      index: true,
-      follow: true,
+      index: siteConfig.seo.index,
+      follow: siteConfig.seo.follow,
       'max-video-preview': -1,
       'max-image-preview': 'large',
       'max-snippet': -1,
     },
   },
+  verification: siteConfig.seo.google_site_verification ? {
+    google: siteConfig.seo.google_site_verification
+  } : undefined,
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://devfolio.charlyautomatiza.com',
-    title: 'DevFolio - Professional Developer Portfolio & CV Generator',
-    description: 'Modern developer portfolio with professional CV generation, multiple themes, and ATS-friendly templates.',
-    siteName: 'DevFolio',
+    url: siteConfig.site_url,
+    title: siteConfig.site_title,
+    description: siteConfig.site_description,
+    siteName: siteConfig.site_name,
     images: [
       {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'DevFolio - Professional Developer Portfolio',
+        url: siteConfig.og_image,
+        width: siteConfig.og_image_width,
+        height: siteConfig.og_image_height,
+        alt: siteConfig.og_image_alt,
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'DevFolio - Professional Developer Portfolio & CV Generator',
-    description: 'Modern developer portfolio with professional CV generation, multiple themes, and ATS-friendly templates.',
-    images: ['/og-image.png'],
+    card: siteConfig.twitter_card as 'summary_large_image',
+    title: siteConfig.site_title,
+    description: siteConfig.site_description,
+    images: [siteConfig.og_image],
   },
   alternates: {
-    canonical: process.env.NEXT_PUBLIC_SITE_URL || 'https://devfolio.charlyautomatiza.com',
+    canonical: siteConfig.site_url,
   },
   other: {
-    'theme-color': '#0f172a',
+    'theme-color': siteConfig.pwa.theme_color,
     'color-scheme': 'light dark',
   },
 }
