@@ -32,6 +32,11 @@ export interface CVData {
 export interface PersonalInfo {
   name: string;
   role: string;
+  location?: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  linkedin?: string;
 }
 
 export interface SocialLinks {
@@ -41,10 +46,23 @@ export interface SocialLinks {
   cv?: string;
 }
 
+export interface FooterConfig {
+  show_creator_link: boolean;
+  creator_text: string;
+  creator_url: string;
+  rights_text: string;
+}
+
 export interface PortfolioProps {
   projects: Project[];
   cvData: CVData;
   personalInfo: PersonalInfo;
   socialLinks: SocialLinks;
   cvPdfUrl?: string;
+  isDevMode?: boolean;
+  featureFlags?: {
+    DEFAULT_CV_TEMPLATE: 'harvard' | 'modern' | 'creative';
+  };
+  showThemeSelector?: boolean;
+  footerConfig?: FooterConfig;
 }

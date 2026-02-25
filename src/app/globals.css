@@ -3,19 +3,134 @@
 @import 'tailwindcss/utilities';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafafa;
+  --foreground: #1a1a1a;
+  --primary: #0066ff;
+  --accent: #0ea5e9;
+  --accent-hover: #0284c7;
+  --muted: #f1f5f9;
+  --border: #d1d5db;
+  --card: #ffffff;
+  --card-hover: #f8fafc;
+  --gradient-start: #f8fafc;
+  --gradient-end: #f1f5f9;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --primary: #0066ff;
+  --accent: #00ffaa;
+  --accent-hover: #00cc88;
+  --muted: #1a1a1a;
+  --border: #333333;
+  --card: #1a1a1a;
+  --card-hover: #262626;
+  --gradient-start: #1a1a1a;
+  --gradient-end: #0a0a0a;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist), system-ui, -apple-system, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  line-height: 1.6;
+}
+
+/* Enhanced hover effects */
+.card-hover {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 255, 170, 0.1),
+    transparent
+  );
+  transition: left 0.6s ease;
+  z-index: 1;
+}
+
+.card-hover:hover::before {
+  left: 100%;
+}
+
+.card-hover:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 255, 170, 0.1);
+}
+
+.dark .card-hover:hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 255, 170, 0.15), 0 0 30px rgba(0, 255, 170, 0.1);
+}
+
+/* Enhanced button glow effect */
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.6s ease;
+}
+
+.btn-glow:hover::before {
+  left: 100%;
+}
+
+.btn-glow:hover {
+  box-shadow: 0 0 20px rgba(0, 255, 170, 0.4), 0 0 40px rgba(0, 255, 170, 0.2);
+  transform: translateY(-2px);
+}
+
+/* New shimmer effect for accent elements */
+.shimmer-bg {
+  background: linear-gradient(
+    90deg,
+    var(--accent) 0%,
+    rgba(0, 255, 170, 0.8) 50%,
+    var(--accent) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.5s linear infinite;
+}
+
+/* Enhanced mobile menu animation */
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.mobile-menu-enter {
+  animation: slideInLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
