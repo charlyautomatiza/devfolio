@@ -19,7 +19,7 @@
     "googleapis": "^144.0.0",
     "gray-matter": "^4.0.3",
     "gsap": "^3.12.5",
-    "jspdf": "^4.1.0",
+    "jspdf": "^4.2.0",
     "lucide-react": "^0.454.0",
     "next": "15.5.10",
     "next-themes": "^0.3.0",
