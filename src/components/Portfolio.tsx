@@ -5,22 +5,47 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { GithubIcon, LinkedinIcon, MailIcon, FileTextIcon, ChevronDownIcon, MoonIcon, SunIcon, MenuIcon, XIcon } from 'lucide-react'
+import { GithubIcon, LinkedinIcon, MailIcon, FileTextIcon, ChevronDownIcon, MoonIcon, SunIcon, MenuIcon, XIcon, PaletteIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import { useMultiTheme } from '@/components/MultiThemeProvider'
+import ThemeSelector from '@/components/ThemeSelector'
 import { PortfolioProps } from '@/types'
 import Image from 'next/image'
+import CVTemplateSelector from '@/components/CVTemplateSelector'
+import CVPreview from '@/components/CVPreview'
+import { CVTemplate, createCVPdf } from '@/utils/pdfGenerator'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export default function Portfolio({ projects, cvData, personalInfo, socialLinks, cvPdfUrl }: Readonly<PortfolioProps>) {
+export default function Portfolio({ 
+  projects, 
+  cvData, 
+  personalInfo, 
+  socialLinks, 
+  cvPdfUrl, 
+  isDevMode = false, 
+  featureFlags = { DEFAULT_CV_TEMPLATE: 'harvard' },
+  showThemeSelector = false,
+  footerConfig = {
+    show_creator_link: true,
+    creator_text: 'CharlyAutomatiza',
+    creator_url: 'https://charlyautomatiza.tech/',
+    rights_text: 'All rights reserved'
+  }
+}: Readonly<PortfolioProps>) {
   const [activeSection, setActiveSection] = useState('')
   const sectionRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement> }>({})
   const [mounted, setMounted] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const mobileMenuRef = useRef<HTMLDivElement>(null)
-  const { theme, setTheme } = useTheme()
+  const { theme } = useTheme()
+  const { toggleMode } = useMultiTheme()
+  const [themeSelectorOpen, setThemeSelectorOpen] = useState(false)
   const [isContactEnabled, setIsContactEnabled] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null)
+  const [showCVTemplateSelector, setShowCVTemplateSelector] = useState(false)
+  const [showCVPreview, setShowCVPreview] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<CVTemplate>('harvard')
 
   useEffect(() => {
     setMounted(true)
@@ -119,6 +144,53 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
     }
   }
 
+  const handleTemplateSelect = (template: CVTemplate) => {
+    setSelectedTemplate(template)
+    setShowCVTemplateSelector(false)
+    setShowCVPreview(true)
+  }
+
+  const handlePreviewBack = () => {
+    setShowCVPreview(false)
+    setShowCVTemplateSelector(true)
+  }
+
+  const handlePreviewClose = () => {
+    setShowCVPreview(false)
+    setShowCVTemplateSelector(false)
+  }
+
+  const handleCVDownload = () => {
+    // This will be called from the preview component
+    handlePreviewClose()
+  }
+
+  const handleCVDownloadClick = async () => {
+    if (isDevMode) {
+      // Development mode: Show template selector and preview
+      setShowCVTemplateSelector(true)
+    } else {
+      // Production mode: Direct download with default template
+      try {
+        const template = featureFlags.DEFAULT_CV_TEMPLATE
+        const pdfArrayBuffer = await createCVPdf(cvData, personalInfo, socialLinks, { template })
+        const blob = new Blob([pdfArrayBuffer], { type: 'application/pdf' })
+        const url = URL.createObjectURL(blob)
+        
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `${personalInfo.name.replace(/\s+/g, '_')}_CV_${template}.pdf`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        
+        URL.revokeObjectURL(url)
+      } catch (error) {
+        console.error('Error downloading CV:', error)
+      }
+    }
+  }
+
   if (!mounted) {
     return null
   }
@@ -127,27 +199,35 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
   if (isContactEnabled) navItems.push('contact')
 
   return (
-    <div className="min-h-screen bg-[#C7D8D9] dark:bg-[#151E21] text-[#2F3E44] dark:text-white transition-colors duration-300">
-      <header className="header fixed top-0 left-0 right-0 z-50 bg-[#91B8C1]/80 dark:bg-[#121212]/80 backdrop-blur-md">
+    <div className="min-h-screen bg-gradient-modern text-foreground transition-all duration-300">
+      <header className="header fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md border-b border-border/10" role="banner">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center">
-            <Button variant="ghost" className="mr-2 lg:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
+            <Button 
+              variant="ghost" 
+              className="mr-2 lg:hidden" 
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation"
+            >
               <MenuIcon className="h-6 w-6" />
             </Button>
             <h1 className="text-xl sm:text-2xl font-bold tracking-wide">{personalInfo.name}</h1>
           </div>
-          <nav className="hidden lg:block">
+          <nav className="hidden lg:block" role="navigation" aria-label="Main navigation">
             <ul className="flex space-x-2 sm:space-x-6">
               {navItems.map((section) => (
                 <li key={section}>
                   <Button
                     variant="ghost"
-                    className={`text-sm sm:text-lg px-2 sm:px-4 ${
+                    className={`text-sm sm:text-lg px-2 sm:px-4 transition-all duration-300 ${
                       activeSection === section 
-                        ? 'bg-[#56B281] dark:bg-[#151E21] text-white' 
-                        : 'text-[#2F3E44] dark:text-white hover:text-[#2F3E44]/80 dark:hover:text-white/80'
+                        ? 'bg-accent text-background shadow-lg' 
+                        : 'text-foreground hover:text-accent hover:bg-muted'
                     }`}
                     onClick={() => scrollToSection(section)}
+                    aria-current={activeSection === section ? 'page' : undefined}
                   >
                     {section.charAt(0).toUpperCase() + section.slice(1)}
                   </Button>
@@ -155,25 +235,51 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
               ))}
             </ul>
           </nav>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="ml-2"
-            aria-label="Toggle theme"
-          >
-            {theme === 'dark' ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
-          </Button>
+          <div className="flex items-center gap-2">
+            {showThemeSelector && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setThemeSelectorOpen(true)}
+                className="hover:bg-accent/10 hover:text-accent transition-all duration-300"
+                aria-label="Change theme"
+              >
+                <PaletteIcon className="h-5 w-5" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleMode}
+              className="hover:bg-accent/10 hover:text-accent transition-all duration-300"
+              aria-label="Toggle theme mode"
+            >
+              {theme === 'dark' ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+            </Button>
+          </div>
         </div>
       </header>
 
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm lg:hidden">
-          <div
+        <div 
+          className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        >
+          <nav
+            id="mobile-navigation"
             ref={mobileMenuRef}
-            className="fixed inset-y-0 left-0 w-64 bg-[#91B8C1] dark:bg-[#121212] p-6"
+            className="fixed inset-y-0 left-0 w-64 bg-card border-r border-border p-6 mobile-menu-enter"
+            onClick={(e) => e.stopPropagation()}
+            role="navigation"
+            aria-label="Mobile navigation"
           >
-            <Button variant="ghost" className="absolute top-4 right-4" onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
+            <Button 
+              variant="ghost" 
+              className="absolute top-4 right-4" 
+              onClick={() => setMobileMenuOpen(false)} 
+              aria-label="Close navigation menu"
+            >
               <XIcon className="h-6 w-6" />
             </Button>
             <ul className="space-y-4 mt-8">
@@ -181,19 +287,20 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
                 <li key={section}>
                   <Button
                     variant="ghost"
-                    className={`text-lg w-full justify-start ${
+                    className={`text-lg w-full justify-start transition-all duration-300 ${
                       activeSection === section 
-                        ? 'bg-[#56B281] dark:bg-[#151E21] text-white' 
-                        : 'text-[#2F3E44] dark:text-white hover:text-[#2F3E44]/80 dark:hover:text-white/80'
+                        ? 'bg-accent text-background' 
+                        : 'text-foreground hover:text-accent hover:bg-muted'
                     }`}
                     onClick={() => scrollToSection(section)}
+                    aria-current={activeSection === section ? 'page' : undefined}
                   >
                     {section.charAt(0).toUpperCase() + section.slice(1)}
                   </Button>
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
         </div>
       )}
 
@@ -201,27 +308,35 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
         {/* Home section */}
         <section
           ref={sectionRefs.current['home']}
-          className="min-h-screen flex flex-col justify-center items-center text-center px-4 bg-gradient-to-b from-[#C7D8D9] to-[#91B8C1] dark:from-[#151E21] dark:to-[#121212]"
+          className="min-h-screen flex flex-col justify-center items-center text-center px-4 bg-gradient-modern"
         >
-          <h1 className="text-4xl sm:text-6xl font-bold mb-6 animate-pulse text-[#2F3E44] dark:text-white">{personalInfo.name}</h1>
-          <p className="text-xl sm:text-2xl mb-8 text-[#2F3E44]/80 dark:text-white/80">{personalInfo.role}</p>
-          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-            <Button size="lg" className="bg-[#56B281] hover:bg-[#56B281]/90 text-white" onClick={() => scrollToSection('portfolio')}>
-              View Portfolio
-            </Button>
-            {cvPdfUrl && (
+          <div className="animate-fade-in">
+            <h1 className="text-4xl sm:text-6xl font-bold mb-6 text-foreground animate-float">
+              {personalInfo.name}
+            </h1>
+            <p className="text-xl sm:text-2xl mb-8 text-foreground/80">
+              {personalInfo.role}
+            </p>
+            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+              <Button 
+                size="lg" 
+                className="bg-accent hover:bg-accent-hover text-background btn-glow transform hover:scale-105 transition-all duration-300" 
+                onClick={() => scrollToSection('portfolio')}
+              >
+                View Portfolio
+              </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-[#56B281] text-[#56B281] hover:bg-[#56B281]/10 dark:text-white dark:border-white"
-                onClick={() => window.open(cvPdfUrl, '_blank')}
+                className="border-accent text-accent hover:bg-accent/10 transform hover:scale-105 transition-all duration-300"
+                onClick={handleCVDownloadClick}
               >
                 Download CV
               </Button>
-            )}
+            </div>
           </div>
           <ChevronDownIcon
-            className="animate-bounce mt-16 cursor-pointer text-[#2F3E44] dark:text-white"
+            className="animate-bounce mt-16 cursor-pointer text-foreground/60 hover:text-accent transition-colors duration-300"
             size={48}
             onClick={() => scrollToSection('portfolio')}
           />
@@ -230,27 +345,34 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
         {/* Portfolio section */}
         <section
           ref={sectionRefs.current['portfolio']}
-          className="min-h-screen py-20 px-4 bg-[#DED7C9] dark:bg-[#151E21]"
+          className="min-h-screen py-20 px-4 bg-muted"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-[#2F3E44] dark:text-white">Portfolio</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-foreground">Portfolio</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project, index) => (
-              <Card key={index} className="bg-white dark:bg-[#121212] overflow-hidden group">
-                <div className="aspect-video bg-[#91B8C1] dark:bg-[#151E21] relative overflow-hidden">
+              <Card key={index} className="bg-card overflow-hidden group card-hover">
+                <div className="aspect-video bg-muted relative overflow-hidden">
                   <Image
                     src={project.image}
                     alt={project.title}
                     width={500}
                     height={250}
-                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110"
+                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-[#2F3E44]/50 dark:bg-[#151E21]/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <Button className="bg-[#56B281] hover:bg-[#56B281]/90 text-white" onClick={() => window.open(project.link, '_blank')}>View Project</Button>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <Button 
+                      className="bg-accent hover:bg-accent-hover text-background btn-glow transform translate-y-4 group-hover:translate-y-0 transition-all duration-300" 
+                      onClick={() => window.open(project.link, '_blank')}
+                    >
+                      View Project
+                    </Button>
                   </div>
                 </div>
-                <div className="p-4">
-                  <h3 className="text-xl font-semibold mb-2 text-[#2F3E44] dark:text-white">{project.title}</h3>
-                  <p className="text-[#2F3E44]/70 dark:text-white/70">{project.description}</p>
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold mb-2 text-foreground group-hover:text-accent transition-colors duration-300">
+                    {project.title}
+                  </h3>
+                  <p className="text-foreground/70">{project.description}</p>
                 </div>
               </Card>
             ))}
@@ -260,38 +382,41 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
         {/* CV section */}
         <section
           ref={sectionRefs.current['cv']}
-          className="min-h-screen py-20 px-4 bg-[#91B8C1] dark:bg-[#121212]"
+          className="min-h-screen py-20 px-4 bg-background"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-white">Curriculum Vitae</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-foreground">Curriculum Vitae</h2>
           <div className="max-w-3xl mx-auto space-y-8">
-            <div className="bg-white dark:bg-[#151E21] rounded-lg p-6">
-              <h3 className="text-2xl font-semibold mb-4 text-[#2F3E44] dark:text-white">Experience</h3>
-              <ul className="space-y-4">
+            <div className="bg-card rounded-lg p-6 card-hover border border-border">
+              <h3 className="text-2xl font-semibold mb-4 text-foreground">Experience</h3>
+              <ul className="space-y-6">
                 {cvData.experiences.map((exp, index) => (
-                  <li key={index}>
-                    <h4 className="text-xl font-medium text-[#2F3E44] dark:text-white">{exp.title} at {exp.company}</h4>
-                    <p className="text-[#2F3E44]/70 dark:text-white/70">{exp.period}</p>
-                    <p className="text-[#2F3E44] dark:text-white">{exp.description}</p>
+                  <li key={index} className="border-l-2 border-accent pl-4">
+                    <h4 className="text-xl font-medium text-foreground">{exp.title} at {exp.company}</h4>
+                    <p className="text-accent font-medium">{exp.period}</p>
+                    <p className="text-foreground/80 mt-2">{exp.description}</p>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="bg-white dark:bg-[#151E21] rounded-lg p-6">
-              <h3 className="text-2xl font-semibold mb-4 text-[#2F3E44] dark:text-white">Education</h3>
+            <div className="bg-card rounded-lg p-6 card-hover border border-border">
+              <h3 className="text-2xl font-semibold mb-4 text-foreground">Education</h3>
               <ul className="space-y-4">
                 {cvData.education.map((edu, index) => (
-                  <li key={index}>
-                    <h4 className="text-xl font-medium text-[#2F3E44] dark:text-white">{edu.degree}</h4>
-                    <p className="text-[#2F3E44]/70 dark:text-white/70">{edu.institution}, {edu.year}</p>
+                  <li key={index} className="border-l-2 border-accent pl-4">
+                    <h4 className="text-xl font-medium text-foreground">{edu.degree}</h4>
+                    <p className="text-accent font-medium">{edu.institution}, {edu.year}</p>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="bg-white dark:bg-[#151E21] rounded-lg p-6">
-              <h3 className="text-2xl font-semibold mb-4 text-[#2F3E44] dark:text-white">Skills</h3>
+            <div className="bg-card rounded-lg p-6 card-hover border border-border">
+              <h3 className="text-2xl font-semibold mb-4 text-foreground">Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {cvData.skills.map((skill, index) => (
-                  <span key={index} className="bg-[#56B281] text-white px-3 py-1 rounded-full text-sm">
+                  <span 
+                    key={index} 
+                    className="bg-accent text-background px-3 py-1 rounded-full text-sm font-medium hover:bg-accent-hover transition-colors duration-300"
+                  >
                     {skill.name}
                   </span>
                 ))}
@@ -304,13 +429,13 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
         {isContactEnabled && (
           <section
             ref={sectionRefs.current['contact']}
-            className="min-h-screen py-20 px-4 flex items-center justify-center bg-[#DED7C9] dark:bg-[#151E21]"
+            className="min-h-screen py-20 px-4 flex items-center justify-center bg-muted"
           >
-            <Card className="w-full max-w-md p-8 bg-white dark:bg-[#121212]">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-[#2F3E44] dark:text-white">Get in Touch</h2>
+            <Card className="w-full max-w-md p-8 bg-card border border-border card-hover">
+              <h2 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-foreground">Get in Touch</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
+                  <label htmlFor="name" className="block text-sm font-medium mb-2 text-foreground">
                     Name
                   </label>
                   <input
@@ -318,11 +443,11 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
                     id="name"
                     name="name"
                     required
-                    className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent text-foreground transition-all duration-300"
                   />
                 </div>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
+                  <label htmlFor="email" className="block text-sm font-medium mb-2 text-foreground">
                     Email
                   </label>
                   <input
@@ -330,11 +455,11 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
                     id="email"
                     name="email"
                     required
-                    className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent text-foreground transition-all duration-300"
                   />
                 </div>
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium mb-2 text-[#2F3E44] dark:text-white">
+                  <label htmlFor="message" className="block text-sm font-medium mb-2 text-foreground">
                     Message
                   </label>
                   <textarea
@@ -342,10 +467,10 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
                     name="message"
                     rows={4}
                     required
-                    className="w-full px-3 py-2 bg-[#C7D8D9] dark:bg-[#151E21] rounded-md focus:outline-none focus:ring-2 focus:ring-[#56B281] text-[#2F3E44] dark:text-white"
+                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent text-foreground transition-all duration-300"
                   ></textarea>
                 </div>
-                <Button type="submit" className="w-full bg-[#56B281] hover:bg-[#56B281]/90 text-white">
+                <Button type="submit" className="w-full bg-accent hover:bg-accent-hover text-background btn-glow">
                   Send Message
                 </Button>
               </form>
@@ -356,33 +481,95 @@ export default function Portfolio({ projects, cvData, personalInfo, socialLinks,
         )}
       </main>
 
-      <footer className="bg-[#2F3E44] dark:bg-[#121212] py-8 px-4">
+      <footer className="bg-background/90 backdrop-blur-md border-t border-border py-8 px-4">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-          <p className="text-white text-center md:text-left">&copy; 2024 {personalInfo.name}. All rights reserved. This site was created by CharlyAutomatiza.</p>
+          <p className="text-foreground/80 text-center md:text-left">
+            &copy; {new Date().getFullYear()} {personalInfo.name}. {footerConfig.rights_text}.
+            {footerConfig.show_creator_link && (
+              <>
+                {' '}This site was created by{' '}
+                <a 
+                  href={footerConfig.creator_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-accent hover:text-accent/80 transition-colors duration-200 underline"
+                >
+                  {footerConfig.creator_text}
+                </a>
+                .
+              </>
+            )}
+          </p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             {socialLinks.github && (
-              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(socialLinks.github, '_blank')} aria-label="GitHub">
+              <Button 
+                variant="ghost" 
+                className="text-foreground/70 hover:text-accent transition-colors duration-300 dark:text-foreground/90" 
+                onClick={() => window.open(socialLinks.github, '_blank')} 
+                aria-label="GitHub"
+              >
                 <GithubIcon size={24} />
               </Button>
             )}
             {socialLinks.linkedin && (
-              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(socialLinks.linkedin, '_blank')} aria-label="LinkedIn">
+              <Button 
+                variant="ghost" 
+                className="text-foreground/70 hover:text-accent transition-colors duration-300" 
+                onClick={() => window.open(socialLinks.linkedin, '_blank')} 
+                aria-label="LinkedIn"
+              >
                 <LinkedinIcon size={24} />
               </Button>
             )}
             {socialLinks.email && (
-              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(`mailto:${socialLinks.email}`)} aria-label="Email">
+              <Button 
+                variant="ghost" 
+                className="text-foreground/70 hover:text-accent transition-colors duration-300" 
+                onClick={() => window.open(`mailto:${socialLinks.email}`)} 
+                aria-label="Email"
+              >
                 <MailIcon size={24} />
               </Button>
             )}
             {cvPdfUrl && (
-              <Button variant="ghost" className="text-white/70 hover:text-white" onClick={() => window.open(cvPdfUrl, '_blank')} aria-label="Download CV">
+              <Button 
+                variant="ghost" 
+                className="text-foreground/70 hover:text-accent transition-colors duration-300" 
+                onClick={handleCVDownloadClick} 
+                aria-label="Download CV"
+              >
                 <FileTextIcon size={24} />
               </Button>
             )}
           </div>
         </div>
       </footer>
+
+      {/* Theme Selector Modal */}
+      {themeSelectorOpen && (
+        <ThemeSelector onClose={() => setThemeSelectorOpen(false)} />
+      )}
+
+      {/* CV Template Selector Modal */}
+      {showCVTemplateSelector && (
+        <CVTemplateSelector
+          onTemplateSelect={handleTemplateSelect}
+          onClose={() => setShowCVTemplateSelector(false)}
+        />
+      )}
+
+      {/* CV Preview Modal */}
+      {showCVPreview && (
+        <CVPreview
+          template={selectedTemplate}
+          cvData={cvData}
+          personalInfo={personalInfo}
+          socialLinks={socialLinks}
+          onClose={handlePreviewClose}
+          onBack={handlePreviewBack}
+          onDownload={handleCVDownload}
+        />
+      )}
     </div>
   )
 }

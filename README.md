@@ -1,130 +1,299 @@
-# DevFolio: Your Customizable Developer Portfolio
+# DevFolio: 100% Markdown-Driven Developer Portfolio
 
-DevFolio is a modern, responsive, and customizable portfolio template for developers. With easy-to-edit markdown files, you can showcase your projects, skills, and experience in a professional and visually appealing way.
+**Create your professional developer portfolio in minutes - No coding required!**
 
-## Features
+DevFolio is a modern, customizable portfolio template that you can personalize entirely through simple Markdown files. Perfect for developers who want a stunning online presence without touching a single line of code.
 
-- 🎨 Modern and clean design
-- 🌓 Dark mode support
-- 📱 Fully responsive
-- ⚡ Built with Next.js for optimal performance
-- 🎭 Easy customization through markdown files
-- 📄 Automatic CV/resume generation
-- 🔗 Social media integration
-- 📊 Contact form connected to Google Sheets
+## ✨ Features
 
-## Quick Start
+- 🎨 **5 Professional Themes** - Ocean Blue, Royal Purple, Forest Green, Sunset Orange, Magenta Pink
+- 🌓 **Light & Dark Mode** for each theme
+- 📱 **Fully Responsive** - Perfect on desktop, tablet, and mobile
+- 📄 **ATS-Friendly CV Generator** - Download professional CVs in 3 templates (Harvard, Modern, Creative)
+- ⚡ **Lightning Fast** - Built with Next.js for optimal performance
+- 🎭 **100% Markdown Customization** - Change everything without coding
+- 🔍 **SEO Optimized** - Built-in metadata, OpenGraph, and structured data
+- ♿ **Accessible** - WCAG compliant with proper ARIA labels
 
-1. Fork this repository
-2. Clone your forked repository
-3. Navigate to the project directory
-4. Install dependencies:
+---
 
-   ```bash
-   npm install
-   ```
+## 🚀 3-Step Customization Guide
 
-5. Start the development server:
+### Step 1: Clone & Install (One-Time Setup)
 
-   ```bash
-   npm run dev
-   ```
+```bash
+# Fork this repository on GitHub, then clone your fork
+git clone https://github.com/YOUR-USERNAME/devfolio.git
+cd devfolio
 
-6. Open `http://localhost:3000` in your browser
+# Install dependencies
+npm install
 
-## Customization
-
-### Personal Information
-
-Edit the [personal-info.md](./src/content/personal-info.md) file in the `content` directory to update your name, role, and other personal details.
-
-### Projects
-
-Add or modify projects in the [projects.md](./src/content/projects.md) file in the `content` directory. Each project should have a title, description, image, and link.
-
-### CV/Resume
-
-Update your experience, education, and skills in the [cv.md](./src/content/cv.md) file in the `content` directory.
-
-### Social Links
-
-Edit the [social-links.md](./src/content/social-links.md) file in the `content` directory to add or modify your social media links.
-
-## Portfolio Configuration with Google Sheets for Contact Form (optional)
-
-This guide explains how to set up Google Sheets to use it with the contact form in your portfolio and configure the necessary environment variables in Vercel.
-
-### Setting Up Google Sheets for Your Portfolio
-
-1. **Configure Google Sheets API**:
-   - Go to the [Google Developers Console](https://console.developers.google.com/).
-   - Create a new project (or select an existing one).
-   - Enable the **Google Sheets API** and **Google Drive API** for this project.
-   - In "Credentials," create a **Service Account** and download the credentials JSON file.
-
-2. **Share Your Google Sheet**:
-   - Open your Google Sheet and share access with the service account email (`GOOGLE_CLIENT_EMAIL`) that you created in Step 1. Ensure that it has **Editor** permissions.
-   - Copy your spreadsheet ID from the URL (the part between `/d/` and `/edit`), which will be used for `GOOGLE_SHEET_ID`.
-
-3. **Setting Up Environment Variables in Vercel**:
-   To enable Google Sheets functionality on Vercel, you need to configure the following environment variables.
-
-   #### Steps to Add Environment Variables in Vercel
-
-   - Go to your Vercel project dashboard.
-   - Navigate to **Settings** > **Environment Variables**.
-   - Click on **Add New Variable** and add each variable with its corresponding value as follows:
-
-     - **Variable Name**: `NEXT_PUBLIC_GOOGLE_SHEETS_ENABLED`
-       - **Value**: `true`
-       - **Environment**: Select the appropriate environment (e.g., Production, Preview, Development).
-
-     - **Variable Name**: `GOOGLE_CLIENT_EMAIL`
-       - **Value**: The service account email from Step 1.
-       - **Environment**: Choose the environment as needed.
-
-     - **Variable Name**: `GOOGLE_PRIVATE_KEY`
-       - **Value**: Copy the private key from your service account JSON file. Make sure to paste it exactly as it appears, without adding `\n` for line breaks if entering directly in Vercel.
-       - **Environment**: Select the desired environment.
-
-     - **Variable Name**: `GOOGLE_SHEET_ID`
-       - **Value**: The ID of your Google Sheet.
-       - **Environment**: Select the appropriate environment.
-
-     - **Variable Name**: `NEXT_PUBLIC_GOOGLE_SCRIPT_URL`
-       - **Value**: The URL of the Google Apps Script, if used (optional).
-       - **Environment**: Select the desired environment.
-
-   - Once all variables are entered, redeploy your project to apply the changes.
-
-### Example Environment Variable Configuration in `.env.local` (for local development)
-
-```env
-NEXT_PUBLIC_GOOGLE_SHEETS_ENABLED=true
-GOOGLE_CLIENT_EMAIL=your-service-account-email@your-project.iam.gserviceaccount.com
-GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBg...\n-----END PRIVATE KEY-----\n"
-GOOGLE_SHEET_ID=1A2B3C4D5E6F7G8H9I0J
-NEXT_PUBLIC_GOOGLE_SCRIPT_URL=https://script.google.com/macros/s/EXAMPLE_SCRIPT_ID/exec
+# Start development server
+npm run dev
 ```
 
-Alternatively, you can use the deploy button below:
+Visit `http://localhost:3000` to see your portfolio!
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/charlyautomatiza/devfolio)
+### Step 2: Personalize Your Content (Edit Markdown Files)
 
-## Opening in StackBlitz
+All customization happens in the `src/content/` folder. No code editing required!
 
-To open and edit this project in StackBlitz:
+#### 📝 **personal-info.md** - Your Basic Information
+```yaml
+---
+name: Your Name
+role: Your Job Title
+location: Your City - Country
+---
+```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/charlyautomatiza/devfolio)
+#### 💼 **cv.md** - Your Professional Experience
+```yaml
+---
+experiences:
+  - title: Your Job Title
+    company: Company Name
+    period: From YYYY.MM to Present
+    location: City, Country
+    description: What you did in this role
 
-## Contributing
+education:
+  - degree: Your Degree
+    institution: University Name
+    year: YYYY
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+skills:
+  - name: JavaScript
+  - name: React
+  # Add all your skills
+---
+```
 
-## License
+#### 🎯 **projects.md** - Your Portfolio Projects
+```yaml
+---
+projects:
+  - title: Project Name
+    description: What this project does
+    image: /path-to-image.jpg
+    link: https://github.com/username/project
+  # Add more projects
+---
+```
 
-This project is open source and available under the [MIT License](LICENSE).
+#### 🔗 **social-links.md** - Your Social Profiles
+```yaml
+---
+linkedin: https://linkedin.com/in/your-profile
+github: https://github.com/your-username
+email: your-email@example.com
+---
+```
 
-## Credits
+#### 🎨 **site-config.md** - Site Settings
+```yaml
+---
+site_name: YourSite
+site_title: Your Professional Portfolio
+site_description: Your portfolio description
+site_url: https://your-domain.com
 
-Created by [CharlyAutomatiza](https://charlyautomatiza.tech/) with ❤️
+footer:
+  show_creator_link: true  # Set to false to remove "Created by CharlyAutomatiza"
+  creator_text: CharlyAutomatiza
+  creator_url: https://charlyautomatiza.tech/
+  rights_text: All rights reserved
+---
+```
+
+#### 💬 **ui-text.md** - Customize All Button Text & Labels
+```yaml
+---
+nav:
+  home: Home
+  portfolio: Portfolio
+  cv: CV
+
+hero:
+  greeting: "Hi, I'm"
+  cta_primary: View Portfolio
+  
+# Customize any text on your site!
+---
+```
+
+### Step 3: Deploy Your Site
+
+#### Deploy to Vercel (Recommended - Free)
+
+1. Push your changes to GitHub
+2. Go to [vercel.com](https://vercel.com) and sign in with GitHub
+3. Click "New Project" and select your DevFolio repository
+4. Click "Deploy" - Done! 🎉
+
+#### Configure Environment Variables (Optional)
+
+In your Vercel dashboard, add these environment variables:
+
+```
+NEXT_PUBLIC_SITE_URL=https://your-domain.vercel.app
+DEV_MODE=false
+SWITCH_THEME=true  # Enable theme selector in production
+```
+
+---
+
+## 📋 All Markdown Configuration Files
+
+| File | What It Controls |
+|------|-----------------|
+| `personal-info.md` | Your name, role, location |
+| `cv.md` | Experience, education, skills |
+| `projects.md` | Portfolio projects |
+| `social-links.md` | LinkedIn, GitHub, email |
+| `site-config.md` | Site title, SEO, footer, analytics |
+| `ui-text.md` | All button text, labels, messages |
+| `feature-flags.md` | Default CV template |
+
+---
+
+## 🎨 Theme Customization
+
+### For Development/Demo (Try All Themes)
+```bash
+# .env.local
+DEV_MODE=true
+SWITCH_THEME=true
+```
+
+### For Production (Choose One Theme)
+```bash
+# .env.local
+DEV_MODE=false
+SWITCH_THEME=false  # Uses Magenta Pink theme by default
+```
+
+To let users switch themes in production:
+```bash
+SWITCH_THEME=true
+```
+
+Available theme combinations:
+- 🌊 Ocean Blue
+- 👑 Royal Purple  
+- 🌲 Forest Green
+- 🌅 Sunset Orange
+- 💖 Magenta Pink
+
+Each theme has both light and dark modes!
+
+---
+
+## 📄 CV Templates
+
+DevFolio includes 3 ATS-friendly CV templates:
+
+1. **Harvard** - Classic academic style with maximum information density
+2. **Modern** - Contemporary design with sidebar layout
+3. **Creative** - Eye-catching design while maintaining ATS compatibility
+
+### Set Default CV Template
+
+Edit `src/content/feature-flags.md`:
+```yaml
+---
+DEFAULT_CV_TEMPLATE: harvard  # or modern, or creative
+---
+```
+
+In development mode, users can preview and select any template. In production mode, the default template is automatically used for downloads.
+
+---
+
+## 🔧 Advanced Configuration
+
+### Add Google Analytics
+
+Edit `src/content/site-config.md`:
+```yaml
+---
+analytics:
+  google_analytics_id: "G-XXXXXXXXXX"
+  google_tag_manager_id: ""  # Optional
+---
+```
+
+### Enable Contact Form
+
+The contact form requires Google Sheets integration. Add these environment variables:
+
+```
+GOOGLE_CLIENT_EMAIL=your-service-account-email
+GOOGLE_PRIVATE_KEY=your-private-key
+GOOGLE_SHEET_ID=your-sheet-id
+NEXT_PUBLIC_GOOGLE_SHEETS_ENABLED=true
+```
+
+---
+
+## 📚 Need Help?
+
+- **Documentation**: All Markdown files include helpful comments
+- **Issues**: [Open an issue](https://github.com/charlyautomatiza/devfolio/issues) on GitHub
+- **Examples**: Each `.md` file includes usage examples
+
+---
+
+## 🛠️ Technical Stack (For Developers)
+
+DevFolio is built with:
+- **Framework**: Next.js 15 with App Router
+- **Styling**: Tailwind CSS
+- **Animations**: GSAP
+- **PDF Generation**: jsPDF
+- **Theme Management**: next-themes
+- **Type Safety**: TypeScript
+
+All configuration is read from Markdown files using `gray-matter`, ensuring a clean separation between content and code.
+
+---
+
+## 📜 License
+
+MIT License - Feel free to use this template for your portfolio!
+
+---
+
+## 🙏 Credits
+
+Created by [CharlyAutomatiza](https://charlyautomatiza.tech/)
+
+If you found this template helpful, please give it a ⭐ on GitHub!
+
+---
+
+## 🚦 Quick Reference: Common Customizations
+
+### Change Your Name & Title
+→ Edit `src/content/personal-info.md`
+
+### Add/Remove Projects  
+→ Edit `src/content/projects.md`
+
+### Update Your Experience
+→ Edit `src/content/cv.md`
+
+### Change Site Title & SEO
+→ Edit `src/content/site-config.md`
+
+### Customize Button Text
+→ Edit `src/content/ui-text.md`
+
+### Hide "Created by CharlyAutomatiza"
+→ Edit `src/content/site-config.md` and set `footer.show_creator_link: false`
+
+### Change Theme Colors
+→ Choose from 5 built-in themes via the theme selector
+
+**Remember: All changes are made in Markdown files. No coding required!** 🎉
