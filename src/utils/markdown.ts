@@ -13,6 +13,17 @@ function isInsideRoot(root: string, candidate: string): boolean {
 }
 
 export async function getMarkdownContent(filename: string) {
+  // Basic validation to prevent path traversal and absolute paths
+  if (
+    !filename ||
+    path.isAbsolute(filename) ||
+    filename.includes('/') ||
+    filename.includes('\\') ||
+    filename.includes(':')
+  ) {
+    throw new Error('Invalid filename')
+  }
+
   const filePath = path.resolve(contentRoot, filename)
 
   if (!isInsideRoot(contentRoot, filePath)) {
