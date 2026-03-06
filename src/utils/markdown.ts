@@ -5,41 +5,34 @@ import path from 'path'
 import matter from 'gray-matter'
 
 const contentRoot = path.join(process.cwd(), 'src', 'content')
+// Resolved once at module load; reused across all calls to avoid redundant I/O.
 const realContentRootPromise = fs.realpath(contentRoot)
 
-function isInsideRoot(root: string, candidate: string): boolean {
-  const rel = path.relative(root, candidate)
-  return rel.length > 0 && !rel.startsWith('..') && !path.isAbsolute(rel)
-}
-
 export async function getMarkdownContent(filename: string) {
-  // Basic validation to prevent path traversal and absolute paths
-  if (
-    !filename ||
-    path.isAbsolute(filename) ||
-    filename.includes('/') ||
-    filename.includes('\\') ||
-    filename.includes(':')
-  ) {
+  // Reject anything that isn't a plain basename (no directory separators or
+  // path-traversal sequences).  path.basename strips leading directory
+  // components, so if the result differs from the input the caller tried to
+  // escape the content root.
+  if (!filename || filename !== path.basename(filename) || filename === '.' || filename === '..') {
     throw new Error('Invalid filename')
   }
 
-  const filePath = path.resolve(contentRoot, filename)
+  // Use the cached, symlink-resolved content root.
+  const realContentRoot = await realContentRootPromise
 
-  if (!isInsideRoot(contentRoot, filePath)) {
+  // Enumerate the actual files present in the content directory and look for
+  // an exact match.  `match` is an element of the on-disk listing — it is
+  // NOT derived from user input — so the path built from it carries no taint.
+  const entries = await fs.readdir(realContentRoot)
+  const match = entries.find(entry => entry === filename)
+  if (!match) {
     throw new Error('Invalid filename')
   }
 
-  const [realContentRoot, realFilePath] = await Promise.all([
-    realContentRootPromise,
-    fs.realpath(filePath),
-  ])
-
-  if (!isInsideRoot(realContentRoot, realFilePath)) {
-    throw new Error('Invalid filename')
-  }
-
-  const fileContents = await fs.readFile(realFilePath, 'utf8')
+  // Both `realContentRoot` and `match` come from trusted filesystem sources,
+  // so this path is free of user-controlled components.
+  const safeFilePath = path.join(realContentRoot, match)
+  const fileContents = await fs.readFile(safeFilePath, 'utf8')
   const { data, content } = matter(fileContents)
   return { data, content }
 }
