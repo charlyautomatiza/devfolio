@@ -12,7 +12,16 @@ export async function getMarkdownContent(filename: string) {
     throw new Error('Invalid filename')
   }
 
-  const fileContents = await fs.readFile(filePath, 'utf8')
+  const [realContentRoot, realFilePath] = await Promise.all([
+    fs.realpath(contentRoot),
+    fs.realpath(filePath),
+  ])
+
+  if (!realFilePath.startsWith(realContentRoot + path.sep)) {
+    throw new Error('Invalid filename')
+  }
+
+  const fileContents = await fs.readFile(realFilePath, 'utf8')
   const { data, content } = matter(fileContents)
   return { data, content }
 }
