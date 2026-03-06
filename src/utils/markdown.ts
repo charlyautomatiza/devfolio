@@ -4,20 +4,27 @@ import fs from 'fs/promises'
 import path from 'path'
 import matter from 'gray-matter'
 
+const contentRoot = path.join(process.cwd(), 'src', 'content')
+const realContentRootPromise = fs.realpath(contentRoot)
+
+function isInsideRoot(root: string, candidate: string): boolean {
+  const rel = path.relative(root, candidate)
+  return rel.length > 0 && !rel.startsWith('..') && !path.isAbsolute(rel)
+}
+
 export async function getMarkdownContent(filename: string) {
-  const contentRoot = path.join(process.cwd(), 'src', 'content')
   const filePath = path.resolve(contentRoot, filename)
 
-  if (!filePath.startsWith(contentRoot + path.sep)) {
+  if (!isInsideRoot(contentRoot, filePath)) {
     throw new Error('Invalid filename')
   }
 
   const [realContentRoot, realFilePath] = await Promise.all([
-    fs.realpath(contentRoot),
+    realContentRootPromise,
     fs.realpath(filePath),
   ])
 
-  if (!realFilePath.startsWith(realContentRoot + path.sep)) {
+  if (!isInsideRoot(realContentRoot, realFilePath)) {
     throw new Error('Invalid filename')
   }
 
