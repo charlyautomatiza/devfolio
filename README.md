@@ -35,6 +35,10 @@ npm run dev
 
 Visit `http://localhost:3000` to see your portfolio!
 
+> **Prefer to skip local setup?** Open the project directly in StackBlitz:
+>
+> [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/charlyautomatiza/devfolio)
+
 ### Step 2: Personalize Your Content (Edit Markdown Files)
 
 All customization happens in the `src/content/` folder. No code editing required!
@@ -127,6 +131,10 @@ hero:
 
 #### Deploy to Vercel (Recommended - Free)
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/charlyautomatiza/devfolio)
+
+Or deploy manually:
+
 1. Push your changes to GitHub
 2. Go to [vercel.com](https://vercel.com) and sign in with GitHub
 3. Click "New Project" and select your DevFolio repository
@@ -160,6 +168,14 @@ SWITCH_THEME=true  # Enable theme selector in production
 
 ## 🎨 Theme Customization
 
+### Environment Variable Reference
+
+| Variable | Options | Default | Description |
+|----------|---------|---------|-------------|
+| `DEV_MODE` | `true`, `false` | `false` | Enables template preview, all themes, and debug tools |
+| `SWITCH_THEME` | `true`, `false` | `false` | Allows theme switching in production |
+| `NEXT_PUBLIC_SITE_URL` | any URL | — | Base URL for SEO metadata and structured data |
+
 ### For Development/Demo (Try All Themes)
 ```bash
 # .env.local
@@ -169,6 +185,9 @@ SWITCH_THEME=true
 
 ### For Production (Choose One Theme)
 ```bash
+# Build and start in production mode
+npm run build && npm start
+
 # .env.local
 DEV_MODE=false
 SWITCH_THEME=false  # Uses Magenta Pink theme by default
@@ -224,15 +243,48 @@ analytics:
 ---
 ```
 
-### Enable Contact Form
+### Enable Contact Form (Google Sheets Integration)
 
-The contact form requires Google Sheets integration. Add these environment variables:
+The contact form stores submissions in a Google Sheet. Follow these steps:
 
-```
-GOOGLE_CLIENT_EMAIL=your-service-account-email
-GOOGLE_PRIVATE_KEY=your-private-key
-GOOGLE_SHEET_ID=your-sheet-id
+#### 1. Configure Google Cloud
+
+- Go to the [Google Developers Console](https://console.developers.google.com/)
+- Create a new project (or select an existing one)
+- Enable the **Google Sheets API** and **Google Drive API**
+- In **Credentials**, create a **Service Account** and download the JSON file
+
+#### 2. Share Your Google Sheet
+
+- Open your Google Sheet and share it with the service account email (`GOOGLE_CLIENT_EMAIL`) with **Editor** permissions
+- Copy the spreadsheet ID from the URL — it's the string between `/d/` and `/edit`
+
+#### 3. Configure Environment Variables
+
+Add each variable in your Vercel dashboard under **Settings › Environment Variables**, or in your local `.env.local`:
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_GOOGLE_SHEETS_ENABLED` | Set to `true` to enable the form |
+| `GOOGLE_CLIENT_EMAIL` | Service account email from Step 1 |
+| `GOOGLE_PRIVATE_KEY` | Private key from the service account JSON |
+| `GOOGLE_SHEET_ID` | Spreadsheet ID from Step 2 |
+| `NEXT_PUBLIC_GOOGLE_SCRIPT_URL` | Google Apps Script URL (optional) |
+
+#### Full `.env.local` Example
+
+```env
+# DevFolio Configuration
+DEV_MODE=false
+SWITCH_THEME=false
+NEXT_PUBLIC_SITE_URL=https://your-domain.vercel.app
+
+# Google Sheets Integration (Optional)
 NEXT_PUBLIC_GOOGLE_SHEETS_ENABLED=true
+GOOGLE_CLIENT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBg...\n-----END PRIVATE KEY-----\n"
+GOOGLE_SHEET_ID=1A2B3C4D5E6F7G8H9I0J
+NEXT_PUBLIC_GOOGLE_SCRIPT_URL=https://script.google.com/macros/s/EXAMPLE_SCRIPT_ID/exec
 ```
 
 ---
@@ -256,6 +308,12 @@ DevFolio is built with:
 - **Type Safety**: TypeScript
 
 All configuration is read from Markdown files using `gray-matter`, ensuring a clean separation between content and code.
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
