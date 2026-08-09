@@ -4,26 +4,24 @@ import React, { useState, useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { GithubIcon, LinkedinIcon, MailIcon, FileTextIcon, ChevronDownIcon, MoonIcon, SunIcon, MenuIcon, XIcon, PaletteIcon } from 'lucide-react'
+import { GithubIcon, LinkedinIcon, MailIcon, FileTextIcon, MoonIcon, SunIcon, MenuIcon, XIcon, PaletteIcon, ExternalLinkIcon, MapPinIcon, ArrowDownIcon } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useMultiTheme } from '@/components/MultiThemeProvider'
 import ThemeSelector from '@/components/ThemeSelector'
 import { PortfolioProps } from '@/types'
-import Image from 'next/image'
 import CVTemplateSelector from '@/components/CVTemplateSelector'
 import CVPreview from '@/components/CVPreview'
 import { CVTemplate, createCVPdf } from '@/utils/pdfGenerator'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export default function Portfolio({ 
-  projects, 
-  cvData, 
-  personalInfo, 
-  socialLinks, 
-  cvPdfUrl, 
-  isDevMode = false, 
+export default function Portfolio({
+  projects,
+  cvData,
+  personalInfo,
+  socialLinks,
+  cvPdfUrl,
+  isDevMode = false,
   featureFlags = { DEFAULT_CV_TEMPLATE: 'harvard' },
   showThemeSelector = false,
   footerConfig = {
@@ -75,29 +73,27 @@ export default function Portfolio({
     }
 
     window.addEventListener('scroll', handleScroll)
-    handleScroll() // Set initial active section
+    handleScroll()
 
     return () => window.removeEventListener('scroll', handleScroll)
   }, [isContactEnabled])
 
   useEffect(() => {
     if (mounted) {
-      gsap.from('.header', { y: -100, opacity: 0, duration: 1, ease: 'power3.out' })
+      gsap.from('.header', { y: -60, opacity: 0, duration: 0.8, ease: 'power3.out' })
 
-      Object.keys(sectionRefs.current).forEach((section) => {
-        if (sectionRefs.current[section]?.current) {
-          gsap.from(sectionRefs.current[section].current, {
-            opacity: 0,
-            y: 50,
-            duration: 1,
-            scrollTrigger: {
-              trigger: sectionRefs.current[section].current,
-              start: 'top 80%',
-              end: 'bottom 20%',
-              toggleActions: 'play none none reverse',
-            },
-          })
-        }
+      gsap.utils.toArray<Element>('.gsap-reveal').forEach((el) => {
+        gsap.from(el, {
+          opacity: 0,
+          y: 32,
+          duration: 0.7,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 88%',
+            toggleActions: 'play none none none',
+          },
+        })
       })
     }
   }, [mounted])
@@ -120,27 +116,23 @@ export default function Portfolio({
     const message = formData.get('message') as string
 
     try {
-        const response = await fetch('/api/submit-form', {
-            method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ name, email, message }),
-        })
+      const response = await fetch('/api/submit-form', {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, message }),
+      })
 
-        if (!response.ok) {
-            const errorText = await response.text(); // Obtener el texto de error
-            throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-        }
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`)
+      }
 
-        if (e.currentTarget) {
-            e.currentTarget.reset()
-        }
-        setSubmitStatus('success')
-    } catch (error: unknown) { // Especificar el tipo de error como 'unknown'
-        console.error('Error submitting form:', error)
-        setSubmitStatus('error')
+      if (e.currentTarget) e.currentTarget.reset()
+      setSubmitStatus('success')
+    } catch (error: unknown) {
+      console.error('Error submitting form:', error)
+      setSubmitStatus('error')
     }
   }
 
@@ -161,29 +153,26 @@ export default function Portfolio({
   }
 
   const handleCVDownload = () => {
-    // This will be called from the preview component
     handlePreviewClose()
   }
 
   const handleCVDownloadClick = async () => {
     if (isDevMode) {
-      // Development mode: Show template selector and preview
       setShowCVTemplateSelector(true)
     } else {
-      // Production mode: Direct download with default template
       try {
         const template = featureFlags.DEFAULT_CV_TEMPLATE
         const pdfArrayBuffer = await createCVPdf(cvData, personalInfo, socialLinks, { template })
         const blob = new Blob([pdfArrayBuffer], { type: 'application/pdf' })
         const url = URL.createObjectURL(blob)
-        
+
         const link = document.createElement('a')
         link.href = url
         link.download = `${personalInfo.name.replace(/\s+/g, '_')}_CV_${template}.pdf`
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
-        
+
         URL.revokeObjectURL(url)
       } catch (error) {
         console.error('Error downloading CV:', error)
@@ -199,70 +188,75 @@ export default function Portfolio({
   if (isContactEnabled) navItems.push('contact')
 
   return (
-    <div className="min-h-screen bg-gradient-modern text-foreground transition-all duration-300">
-      <header className="header fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md border-b border-border/10" role="banner">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center">
-            <Button 
-              variant="ghost" 
-              className="mr-2 lg:hidden" 
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-              aria-label="Toggle navigation menu"
-              aria-expanded={mobileMenuOpen}
-              aria-controls="mobile-navigation"
-            >
-              <MenuIcon className="h-6 w-6" />
-            </Button>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-wide">{personalInfo.name}</h1>
-          </div>
-          <nav className="hidden lg:block" role="navigation" aria-label="Main navigation">
-            <ul className="flex space-x-2 sm:space-x-6">
-              {navItems.map((section) => (
-                <li key={section}>
-                  <Button
-                    variant="ghost"
-                    className={`text-sm sm:text-lg px-2 sm:px-4 transition-all duration-300 ${
-                      activeSection === section 
-                        ? 'bg-accent text-background shadow-lg' 
-                        : 'text-foreground hover:text-accent hover:bg-muted'
-                    }`}
-                    onClick={() => scrollToSection(section)}
-                    aria-current={activeSection === section ? 'page' : undefined}
-                  >
-                    {section.charAt(0).toUpperCase() + section.slice(1)}
-                  </Button>
-                </li>
-              ))}
-            </ul>
+    <div className="min-h-screen bg-background text-foreground">
+      {/* ─── Header ─────────────────────────────────────────── */}
+      <header
+        className="header fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border"
+        role="banner"
+      >
+        <div className="max-w-6xl mx-auto px-5 py-3 flex justify-between items-center">
+          <button
+            className="text-base font-semibold tracking-tight text-foreground hover:text-accent transition-colors duration-200"
+            onClick={() => scrollToSection('home')}
+            aria-label="Go to home"
+          >
+            {personalInfo.name}
+          </button>
+
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-1" role="navigation" aria-label="Main navigation">
+            {navItems.map((section) => (
+              <button
+                key={section}
+                className={`nav-link ${activeSection === section ? 'active' : ''}`}
+                onClick={() => scrollToSection(section)}
+                aria-current={activeSection === section ? 'page' : undefined}
+              >
+                {section.charAt(0).toUpperCase() + section.slice(1)}
+              </button>
+            ))}
           </nav>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-1">
             {showThemeSelector && (
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setThemeSelectorOpen(true)}
-                className="hover:bg-accent/10 hover:text-accent transition-all duration-300"
+                className="h-8 w-8 rounded-lg hover:bg-accent-subtle hover:text-accent transition-all duration-200"
                 aria-label="Change theme"
               >
-                <PaletteIcon className="h-5 w-5" />
+                <PaletteIcon className="h-4 w-4" />
               </Button>
             )}
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleMode}
-              className="hover:bg-accent/10 hover:text-accent transition-all duration-300"
+              className="h-8 w-8 rounded-lg hover:bg-accent-subtle hover:text-accent transition-all duration-200"
               aria-label="Toggle theme mode"
             >
-              {theme === 'dark' ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+              {theme === 'dark' ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-lg lg:hidden hover:bg-accent-subtle transition-all duration-200"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation"
+            >
+              <MenuIcon className="h-4 w-4" />
             </Button>
           </div>
         </div>
       </header>
 
+      {/* ─── Mobile Menu ────────────────────────────────────── */}
       {mobileMenuOpen && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm lg:hidden"
+        <div
+          className="fixed inset-0 z-50 bg-black/30 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
           aria-hidden="true"
         >
@@ -274,29 +268,26 @@ export default function Portfolio({
             role="navigation"
             aria-label="Mobile navigation"
           >
-            <Button 
-              variant="ghost" 
-              className="absolute top-4 right-4" 
-              onClick={() => setMobileMenuOpen(false)} 
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 h-8 w-8"
+              onClick={() => setMobileMenuOpen(false)}
               aria-label="Close navigation menu"
             >
-              <XIcon className="h-6 w-6" />
+              <XIcon className="h-4 w-4" />
             </Button>
-            <ul className="space-y-4 mt-8">
+            <p className="text-sm font-semibold text-muted-foreground mb-6 mt-2 uppercase tracking-widest">Navigation</p>
+            <ul className="space-y-1">
               {navItems.map((section) => (
                 <li key={section}>
-                  <Button
-                    variant="ghost"
-                    className={`text-lg w-full justify-start transition-all duration-300 ${
-                      activeSection === section 
-                        ? 'bg-accent text-background' 
-                        : 'text-foreground hover:text-accent hover:bg-muted'
-                    }`}
+                  <button
+                    className={`nav-link w-full text-left text-base ${activeSection === section ? 'active' : ''}`}
                     onClick={() => scrollToSection(section)}
                     aria-current={activeSection === section ? 'page' : undefined}
                   >
                     {section.charAt(0).toUpperCase() + section.slice(1)}
-                  </Button>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -304,195 +295,318 @@ export default function Portfolio({
         </div>
       )}
 
-      <main className="pt-20">
-        {/* Home section */}
+      <main className="pt-16">
+        {/* ─── Hero ───────────────────────────────────────── */}
         <section
           ref={sectionRefs.current['home']}
-          className="min-h-screen flex flex-col justify-center items-center text-center px-4 bg-gradient-modern"
+          className="relative min-h-screen flex flex-col justify-center px-5"
+          id="home"
         >
-          <div className="animate-fade-in">
-            <h1 className="text-4xl sm:text-6xl font-bold mb-6 text-foreground animate-float">
-              {personalInfo.name}
-            </h1>
-            <p className="text-xl sm:text-2xl mb-8 text-foreground/80">
-              {personalInfo.role}
-            </p>
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <Button 
-                size="lg" 
-                className="bg-accent hover:bg-accent-hover text-background btn-glow transform hover:scale-105 transition-all duration-300" 
-                onClick={() => scrollToSection('portfolio')}
-              >
-                View Portfolio
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="border-accent text-accent hover:bg-accent/10 transform hover:scale-105 transition-all duration-300"
-                onClick={handleCVDownloadClick}
-              >
-                Download CV
-              </Button>
-            </div>
-          </div>
-          <ChevronDownIcon
-            className="animate-bounce mt-16 cursor-pointer text-foreground/60 hover:text-accent transition-colors duration-300"
-            size={48}
-            onClick={() => scrollToSection('portfolio')}
+          {/* Subtle grid decoration */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
+            style={{
+              backgroundImage:
+                'linear-gradient(var(--foreground) 1px, transparent 1px), linear-gradient(90deg, var(--foreground) 1px, transparent 1px)',
+              backgroundSize: '60px 60px',
+            }}
+            aria-hidden="true"
           />
-        </section>
 
-        {/* Portfolio section */}
-        <section
-          ref={sectionRefs.current['portfolio']}
-          className="min-h-screen py-20 px-4 bg-muted"
-        >
-          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-foreground">Portfolio</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {projects.map((project, index) => (
-              <Card key={index} className="bg-card overflow-hidden group card-hover">
-                <div className="aspect-video bg-muted relative overflow-hidden">
-                  <Image
-                    src={project.image}
-                    alt={project.title}
-                    width={500}
-                    height={250}
-                    className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <Button 
-                      className="bg-accent hover:bg-accent-hover text-background btn-glow transform translate-y-4 group-hover:translate-y-0 transition-all duration-300" 
-                      onClick={() => window.open(project.link, '_blank')}
-                    >
-                      View Project
-                    </Button>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold mb-2 text-foreground group-hover:text-accent transition-colors duration-300">
-                    {project.title}
-                  </h3>
-                  <p className="text-foreground/70">{project.description}</p>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </section>
+          <div className="max-w-6xl mx-auto w-full py-24 lg:py-32">
+            <div className="max-w-4xl">
+              <p className="section-label mb-6 gsap-reveal">Available for opportunities</p>
 
-        {/* CV section */}
-        <section
-          ref={sectionRefs.current['cv']}
-          className="min-h-screen py-20 px-4 bg-background"
-        >
-          <h2 className="text-3xl sm:text-4xl font-bold mb-12 text-center text-foreground">Curriculum Vitae</h2>
-          <div className="max-w-3xl mx-auto space-y-8">
-            <div className="bg-card rounded-lg p-6 card-hover border border-border">
-              <h3 className="text-2xl font-semibold mb-4 text-foreground">Experience</h3>
-              <ul className="space-y-6">
-                {cvData.experiences.map((exp, index) => (
-                  <li key={index} className="border-l-2 border-accent pl-4">
-                    <h4 className="text-xl font-medium text-foreground">{exp.title} at {exp.company}</h4>
-                    <p className="text-accent font-medium">{exp.period}</p>
-                    <p className="text-foreground/80 mt-2">{exp.description}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="bg-card rounded-lg p-6 card-hover border border-border">
-              <h3 className="text-2xl font-semibold mb-4 text-foreground">Education</h3>
-              <ul className="space-y-4">
-                {cvData.education.map((edu, index) => (
-                  <li key={index} className="border-l-2 border-accent pl-4">
-                    <h4 className="text-xl font-medium text-foreground">{edu.degree}</h4>
-                    <p className="text-accent font-medium">{edu.institution}, {edu.year}</p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="bg-card rounded-lg p-6 card-hover border border-border">
-              <h3 className="text-2xl font-semibold mb-4 text-foreground">Skills</h3>
-              <div className="flex flex-wrap gap-2">
-                {cvData.skills.map((skill, index) => (
-                  <span 
-                    key={index} 
-                    className="bg-accent text-background px-3 py-1 rounded-full text-sm font-medium hover:bg-accent-hover transition-colors duration-300"
+              <h1 className="display-xl text-foreground mb-6 gsap-reveal" style={{ animationDelay: '0.1s' }}>
+                {personalInfo.name}
+              </h1>
+
+              <p className="text-xl sm:text-2xl text-muted-foreground font-medium mb-4 gsap-reveal" style={{ animationDelay: '0.15s' }}>
+                {personalInfo.role}
+              </p>
+
+              {personalInfo.location && (
+                <p className="flex items-center gap-2 text-muted-foreground text-sm mb-10 gsap-reveal" style={{ animationDelay: '0.2s' }}>
+                  <MapPinIcon className="h-4 w-4" />
+                  {personalInfo.location}
+                </p>
+              )}
+
+              <div className="flex flex-wrap gap-3 gsap-reveal" style={{ animationDelay: '0.25s' }}>
+                <button
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-white font-semibold text-sm hover:bg-accent-hover btn-glow transition-all duration-200"
+                  onClick={() => scrollToSection('portfolio')}
+                >
+                  View Portfolio
+                  <ArrowDownIcon className="h-4 w-4" />
+                </button>
+                <button
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-card border border-border text-foreground font-semibold text-sm hover:border-border-strong hover:bg-card-hover transition-all duration-200"
+                  onClick={handleCVDownloadClick}
+                >
+                  <FileTextIcon className="h-4 w-4" />
+                  Download CV
+                </button>
+              </div>
+
+              {/* Social links inline */}
+              <div className="flex items-center gap-3 mt-8 gsap-reveal" style={{ animationDelay: '0.3s' }}>
+                {socialLinks.github && (
+                  <a
+                    href={socialLinks.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center h-9 w-9 rounded-lg border border-border text-muted-foreground hover:text-accent hover:border-accent transition-all duration-200"
+                    aria-label="GitHub"
                   >
-                    {skill.name}
-                  </span>
-                ))}
+                    <GithubIcon className="h-4 w-4" />
+                  </a>
+                )}
+                {socialLinks.linkedin && (
+                  <a
+                    href={socialLinks.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center h-9 w-9 rounded-lg border border-border text-muted-foreground hover:text-accent hover:border-accent transition-all duration-200"
+                    aria-label="LinkedIn"
+                  >
+                    <LinkedinIcon className="h-4 w-4" />
+                  </a>
+                )}
+                {socialLinks.email && (
+                  <a
+                    href={`mailto:${socialLinks.email}`}
+                    className="flex items-center justify-center h-9 w-9 rounded-lg border border-border text-muted-foreground hover:text-accent hover:border-accent transition-all duration-200"
+                    aria-label="Email"
+                  >
+                    <MailIcon className="h-4 w-4" />
+                  </a>
+                )}
               </div>
             </div>
           </div>
         </section>
 
-        {/* Contact section */}
+        {/* ─── Portfolio ──────────────────────────────────── */}
+        <section
+          ref={sectionRefs.current['portfolio']}
+          className="py-24 px-5 bg-muted"
+          id="portfolio"
+        >
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-14 gsap-reveal">
+              <p className="section-label mb-3">Selected work</p>
+              <h2 className="display-md text-foreground">Portfolio</h2>
+            </div>
+
+            {/* Bento grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {projects.map((project, index) => (
+                <article
+                  key={index}
+                  className={`bento-cell group gsap-reveal ${index === 0 ? 'lg:col-span-2' : ''}`}
+                  style={{ animationDelay: `${index * 0.07}s` }}
+                >
+                  {/* Project number */}
+                  <div className="p-6 pb-0 flex justify-between items-start">
+                    <span className="text-xs font-semibold text-muted-foreground tabular-nums">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <a
+                      href={project.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center h-8 w-8 rounded-lg bg-muted text-muted-foreground hover:bg-accent hover:text-white transition-all duration-200 opacity-0 group-hover:opacity-100"
+                      aria-label={`Open ${project.title}`}
+                    >
+                      <ExternalLinkIcon className="h-3.5 w-3.5" />
+                    </a>
+                  </div>
+
+                  <div className="p-6 pt-4">
+                    <h3 className="text-base font-semibold text-foreground mb-2 group-hover:text-accent transition-colors duration-200">
+                      {project.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {project.description}
+                    </p>
+                  </div>
+
+                  {/* Bottom accent bar */}
+                  <div className="h-1 w-0 group-hover:w-full bg-accent transition-all duration-500 ease-out" aria-hidden="true" />
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ─── CV / Experience ────────────────────────────── */}
+        <section
+          ref={sectionRefs.current['cv']}
+          className="py-24 px-5 bg-background"
+          id="cv"
+        >
+          <div className="max-w-6xl mx-auto">
+            <div className="mb-14 gsap-reveal">
+              <p className="section-label mb-3">Background</p>
+              <h2 className="display-md text-foreground">Curriculum Vitae</h2>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Experience — takes 2 columns */}
+              <div className="lg:col-span-2 space-y-4 gsap-reveal">
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-6">Experience</h3>
+                <div className="space-y-8">
+                  {cvData.experiences.map((exp, index) => (
+                    <div key={index} className="timeline-item gsap-reveal" style={{ animationDelay: `${index * 0.05}s` }}>
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 mb-2">
+                        <div>
+                          <h4 className="text-base font-semibold text-foreground">{exp.title}</h4>
+                          <p className="text-sm font-medium text-accent">{exp.company}</p>
+                        </div>
+                        <p className="text-xs text-muted-foreground whitespace-nowrap shrink-0 mt-0.5">{exp.period}</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{exp.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sidebar: Education + Skills */}
+              <div className="space-y-10">
+                {/* Education */}
+                <div className="gsap-reveal">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-6">Education</h3>
+                  <div className="space-y-6">
+                    {cvData.education.map((edu, index) => (
+                      <div key={index} className="timeline-item">
+                        <h4 className="text-sm font-semibold text-foreground">{edu.degree}</h4>
+                        <p className="text-sm text-accent font-medium">{edu.institution}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{edu.year}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Skills */}
+                <div className="gsap-reveal">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest mb-6">Skills</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {cvData.skills.map((skill, index) => (
+                      <span key={index} className="skill-badge">
+                        {skill.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Download CTA */}
+                <div className="gsap-reveal">
+                  <button
+                    onClick={handleCVDownloadClick}
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent text-white font-semibold text-sm hover:bg-accent-hover btn-glow transition-all duration-200"
+                  >
+                    <FileTextIcon className="h-4 w-4" />
+                    Download Full CV
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Contact ────────────────────────────────────── */}
         {isContactEnabled && (
           <section
             ref={sectionRefs.current['contact']}
-            className="min-h-screen py-20 px-4 flex items-center justify-center bg-muted"
+            className="py-24 px-5 bg-muted"
+            id="contact"
           >
-            <Card className="w-full max-w-md p-8 bg-card border border-border card-hover">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-foreground">Get in Touch</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium mb-2 text-foreground">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    required
-                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent text-foreground transition-all duration-300"
-                  />
+            <div className="max-w-6xl mx-auto">
+              <div className="mb-14 gsap-reveal">
+                <p className="section-label mb-3">Say hello</p>
+                <h2 className="display-md text-foreground">Get in Touch</h2>
+              </div>
+
+              <div className="max-w-xl gsap-reveal">
+                <div className="bento-cell p-8">
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    <div>
+                      <label htmlFor="name" className="block text-sm font-medium mb-2 text-foreground">
+                        Name
+                      </label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        required
+                        className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-accent text-foreground text-sm transition-all duration-200 placeholder:text-muted-foreground"
+                        placeholder="Your name"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium mb-2 text-foreground">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        required
+                        className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-accent text-foreground text-sm transition-all duration-200 placeholder:text-muted-foreground"
+                        placeholder="you@example.com"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="message" className="block text-sm font-medium mb-2 text-foreground">
+                        Message
+                      </label>
+                      <textarea
+                        id="message"
+                        name="message"
+                        rows={5}
+                        required
+                        className="w-full px-4 py-2.5 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-accent text-foreground text-sm transition-all duration-200 placeholder:text-muted-foreground resize-none"
+                        placeholder="Tell me about your project..."
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-accent text-white font-semibold text-sm hover:bg-accent-hover btn-glow transition-all duration-200"
+                    >
+                      Send Message
+                    </button>
+                  </form>
+                  {submitStatus === 'success' && (
+                    <p className="mt-4 text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+                      ✓ Message sent successfully!
+                    </p>
+                  )}
+                  {submitStatus === 'error' && (
+                    <p className="mt-4 text-sm text-red-600 dark:text-red-400 font-medium">
+                      Something went wrong. Please try again.
+                    </p>
+                  )}
                 </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-2 text-foreground">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    required
-                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent text-foreground transition-all duration-300"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium mb-2 text-foreground">
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={4}
-                    required
-                    className="w-full px-3 py-2 bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent text-foreground transition-all duration-300"
-                  ></textarea>
-                </div>
-                <Button type="submit" className="w-full bg-accent hover:bg-accent-hover text-background btn-glow">
-                  Send Message
-                </Button>
-              </form>
-              {submitStatus === 'success' && <p className="mt-4 text-green-600">Message sent successfully!</p>}
-              {submitStatus === 'error' && <p className="mt-4 text-red-600">An error occurred. Please try again.</p>}
-            </Card>
+              </div>
+            </div>
           </section>
         )}
       </main>
 
-      <footer className="bg-background/90 backdrop-blur-md border-t border-border py-8 px-4">
-        <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
-          <p className="text-foreground/80 text-center md:text-left">
+      {/* ─── Footer ─────────────────────────────────────────── */}
+      <footer className="border-t border-border py-10 px-5">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-sm text-muted-foreground text-center md:text-left">
             &copy; {new Date().getFullYear()} {personalInfo.name}. {footerConfig.rights_text}.
             {footerConfig.show_creator_link && (
               <>
-                {' '}This site was created by{' '}
-                <a 
-                  href={footerConfig.creator_url} 
-                  target="_blank" 
+                {' '}Built by{' '}
+                <a
+                  href={footerConfig.creator_url}
+                  target="_blank"
                   rel="noopener noreferrer"
-                  className="text-accent hover:text-accent/80 transition-colors duration-200 underline"
+                  className="text-accent hover:text-accent-hover transition-colors duration-200 underline underline-offset-2"
                 >
                   {footerConfig.creator_text}
                 </a>
@@ -500,57 +614,54 @@ export default function Portfolio({
               </>
             )}
           </p>
-          <div className="flex space-x-4 mt-4 md:mt-0">
+          <div className="flex items-center gap-2">
             {socialLinks.github && (
-              <Button 
-                variant="ghost" 
-                className="text-foreground/70 hover:text-accent transition-colors duration-300 dark:text-foreground/90" 
-                onClick={() => window.open(socialLinks.github, '_blank')} 
+              <a
+                href={socialLinks.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center h-8 w-8 rounded-lg border border-border text-muted-foreground hover:text-accent hover:border-accent transition-all duration-200"
                 aria-label="GitHub"
               >
-                <GithubIcon size={24} />
-              </Button>
+                <GithubIcon className="h-4 w-4" />
+              </a>
             )}
             {socialLinks.linkedin && (
-              <Button 
-                variant="ghost" 
-                className="text-foreground/70 hover:text-accent transition-colors duration-300" 
-                onClick={() => window.open(socialLinks.linkedin, '_blank')} 
+              <a
+                href={socialLinks.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center h-8 w-8 rounded-lg border border-border text-muted-foreground hover:text-accent hover:border-accent transition-all duration-200"
                 aria-label="LinkedIn"
               >
-                <LinkedinIcon size={24} />
-              </Button>
+                <LinkedinIcon className="h-4 w-4" />
+              </a>
             )}
             {socialLinks.email && (
-              <Button 
-                variant="ghost" 
-                className="text-foreground/70 hover:text-accent transition-colors duration-300" 
-                onClick={() => window.open(`mailto:${socialLinks.email}`)} 
+              <a
+                href={`mailto:${socialLinks.email}`}
+                className="flex items-center justify-center h-8 w-8 rounded-lg border border-border text-muted-foreground hover:text-accent hover:border-accent transition-all duration-200"
                 aria-label="Email"
               >
-                <MailIcon size={24} />
-              </Button>
+                <MailIcon className="h-4 w-4" />
+              </a>
             )}
             {cvPdfUrl && (
-              <Button 
-                variant="ghost" 
-                className="text-foreground/70 hover:text-accent transition-colors duration-300" 
-                onClick={handleCVDownloadClick} 
+              <button
+                onClick={handleCVDownloadClick}
+                className="flex items-center justify-center h-8 w-8 rounded-lg border border-border text-muted-foreground hover:text-accent hover:border-accent transition-all duration-200"
                 aria-label="Download CV"
               >
-                <FileTextIcon size={24} />
-              </Button>
+                <FileTextIcon className="h-4 w-4" />
+              </button>
             )}
           </div>
         </div>
       </footer>
 
-      {/* Theme Selector Modal */}
-      {themeSelectorOpen && (
-        <ThemeSelector onClose={() => setThemeSelectorOpen(false)} />
-      )}
+      {/* ─── Modals ─────────────────────────────────────────── */}
+      {themeSelectorOpen && <ThemeSelector onClose={() => setThemeSelectorOpen(false)} />}
 
-      {/* CV Template Selector Modal */}
       {showCVTemplateSelector && (
         <CVTemplateSelector
           onTemplateSelect={handleTemplateSelect}
@@ -558,7 +669,6 @@ export default function Portfolio({
         />
       )}
 
-      {/* CV Preview Modal */}
       {showCVPreview && (
         <CVPreview
           template={selectedTemplate}
